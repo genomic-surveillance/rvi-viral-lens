@@ -56,19 +56,19 @@ nextflow_pipeline {
         }
     }
 
-    test("Should fail if min_coverage_percent not between 0.0 and 1.0") {
+    test("Should fail if min_coverage_percent not between 0.0 and 100.0") {
        when{ 
         params {
             run_preprocessing=false
             db_path="${projectDir}/tests/test_data/test_kraken_databases/minimal"
             manifest="${projectDir}/tests/test_data/test_manifests/test_input_manifest_located.csv"
-            min_coverage_percent = 2.0
+            min_coverage_percent = 200.0
             }
        }
         then {
             assert workflow.failed
             assert workflow.exitStatus == 1
-            assert workflow.stdout.contains('ERROR ~ min_coverage_percent value set (2.0) must be >=0.0 and <=1.0')
+            assert workflow.stdout.contains('ERROR ~ min_coverage_percent value set (200.0) must be >=0.0 and <=100.0')
 
         }
     }
@@ -81,7 +81,7 @@ nextflow_pipeline {
                 test_loc="${projectDir}/tests/test_data"
                 db_path="${projectDir}/tests/test_data/test_kraken_databases/minimal"
                 manifest="${params.test_loc}/test_manifest_checks/consecutive_underscore_mnf_located.csv"
-                min_coverage_percent = 0.1
+                min_coverage_percent = 10.0
 
             }
         }

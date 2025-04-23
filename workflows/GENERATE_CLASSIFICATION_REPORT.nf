@@ -61,6 +61,7 @@ workflow GENERATE_CLASSIFICATION_REPORT {
         .branch{ it ->
             sample_cov = it[0].percentage_genome_coverage as Float
             min_cov = params.min_coverage_percent as Float
+
             valid: sample_cov > min_cov
             not_valid: sample_cov <= min_cov
         }
@@ -150,8 +151,8 @@ def check_classification_report_params(){
     min_cov_value = params.min_coverage_percent as Float
 
     // if float, it should be between [0.0,100.0]
-    if (min_cov_value >= 0.0 || min_cov_value <= 100.0){
-            log.error("min_coverage_percent value set ($min_cov_value) must be >=0.0 and <=1.0")
+    if (min_cov_value < 0.0 || min_cov_value > 100.0){
+            log.error("min_coverage_percent value set ($min_cov_value) must be >=0.0 and <=100.0")
             errors +=1
     }
 
