@@ -16,7 +16,7 @@ nextflow_workflow {
                     virus_name:"SARSCov2",
                     virus_subtype:"BA.2",
                     flu_segment:"",
-                    percentage_genome_coverage:"0.90",
+                    percentage_genome_coverage:"90.0",
                     ref_selected:"Severe acute respiratory syndrome coronavirus 2",
                     total_mapped_reads:"200",
                     longest_no_N_segment:"10",
@@ -31,14 +31,14 @@ nextflow_workflow {
                     virus_name:"Random",
                     virus_subtype:"",
                     flu_segment:"",
-                    percentage_genome_coverage:"0.05",
+                    percentage_genome_coverage:"5.0",
                     ref_selected:"random virus",
                     total_mapped_reads:"5",
-                    longest_no_N_segment:"10",
+                    longest_no_N_segment:"9",
                     percentage_of_N_bases:"0.95"
                     ]
                 ]
-                min_coverage_percent = 0.30
+                min_coverage_percent = 10
 
             }
             workflow {

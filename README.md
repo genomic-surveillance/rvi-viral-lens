@@ -432,7 +432,7 @@ The `params` block defines key user-modifiable settings for the workflow.
 
 #### Classification report
 
-- `min_coverage_percent`: minimum coverage percent threshold, fractional values between 0.0 and 1.0 are accepted (default: `0.1`) 
+- `min_coverage_percent`: minimum coverage percent threshold, fractional values between 0.0 and 100.0 are accepted (default: `10.0`)
 
 #### Output Directory
 
