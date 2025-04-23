@@ -148,13 +148,6 @@ def check_classification_report_params(){
 
     // if provided, check if it is float
     min_cov_value = params.min_coverage_percent as Float
-    /*
-    // was a float value provided?
-    if (!(min_cov_value instanceof java.math.BigDecimal) ){
-        log.error("min_coverage_percent value set ($min_cov_value) is not a float")
-        errors +=1
-    }
-    */
 
     // if float, it should be between [0.0,1.0]
     if (min_cov_value >= 1.0 || min_cov_value <= 0.0){
