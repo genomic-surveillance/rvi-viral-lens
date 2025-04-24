@@ -58,8 +58,8 @@ workflow GENERATE_CONSENSUS {
             | map {meta, bams ->
                 // store bam file on meta (check TODO) 
                 meta.bam_file = bams[0]
-                tuple(meta, bams)}
-            | set {ivar_in_ch}
+                tuple(meta, bams, meta.ref_files[0])}
+            | set {ivar_in_ch} // tuple (meta, bam, ref_fasta)
 
         // generate consensus using ivar
         run_ivar(ivar_in_ch)
