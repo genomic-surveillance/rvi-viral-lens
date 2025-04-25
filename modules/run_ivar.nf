@@ -56,7 +56,7 @@ process run_ivar{
     tuple val(meta), path(bams), path(reference_fasta)
 
   output:
-    tuple val(meta), path("${meta.id}.consensus.fa"), path(mpileup_output)
+    tuple val(meta), path("${meta.id}.consensus.fa"), path(mpileup_output), stdout
 
   script:
     sorted_bam = "${meta.id}.sorted.bam"
@@ -67,8 +67,9 @@ process run_ivar{
 
     samtools mpileup -aa -A -B -d 0 -Q0 ${sorted_bam} > ${mpileup_output}
     cat ${mpileup_output} | ivar consensus -t ${params.ivar_freq_threshold} -m ${params.ivar_min_depth} -n N -p ${meta.id}.consensus
-    cat ${mpileup_output} | ivar variants -t ${params.ivar_freq_threshold} -q ${params.ivar_min_quality_treshold} -r ${reference_fasta} -p ${meta.id}
-
+    cat ${mpileup_output} | ivar variants -t ${params.ivar_freq_threshold} -q ${params.ivar_min_quality_treshold} -r ${reference_fasta} -p ${meta.id}_mutations
+    echo "---"
+    mut_stats.py ${meta.id}_mutations.tsv
     """
 }
 
