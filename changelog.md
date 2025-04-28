@@ -4,7 +4,8 @@ All notable changes to this project will be documented in this file.
 
 ## [UNRELEASED]
 
-- **[added]**: `min_coverage_percent` parameter added 
+- **[added]**: reimplement ivar variants and add mutation statistics
+- **[added]**: `min_coverage_percent` parameter added
 
 ## [1.0]
 
