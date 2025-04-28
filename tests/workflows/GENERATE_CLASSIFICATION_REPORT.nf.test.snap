@@ -3,14 +3,14 @@
         "content": [
             {
                 "0": [
-                    "classification_report.csv:md5,e3d55d84c4264a4dff648359c3ba1c2a"
+                    "classification_report.csv:md5,4514a03ccb722f5566e34a29953ad164"
                 ]
             }
         ],
         "meta": {
-            "nf-test": "0.9.0",
-            "nextflow": "23.10.0"
+            "nf-test": "0.9.2",
+            "nextflow": "24.10.3"
         },
-        "timestamp": "2024-07-22T14:53:03.143809418"
+        "timestamp": "2025-04-28T12:11:55.794134"
     }
 }
