@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file.
 
+## [UNRELEASED]
+
+- **[added]**: `min_coverage_percent` parameter added 
+
 ## [1.0]
 
 - **[fix]**: Fix unknown config attribute `CONTAINER_DIR` for tests
