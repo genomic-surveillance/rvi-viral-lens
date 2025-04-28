@@ -7,6 +7,7 @@ nextflow.enable.dsl = 2
 // --- import modules ---------------------------------------------------------
 include {check_generate_consensus_params; parse_consensus_mnf_meta} from './workflows/GENERATE_CONSENSUS.nf'
 include {check_sort_reads_params} from './workflows/SORT_READS_BY_REF.nf'
+include {check_classification_report_params} from './workflows/GENERATE_CLASSIFICATION_REPORT.nf'
 include { validateParameters; paramsSummaryLog} from 'plugin/nf-schema'
 
 include {SORT_READS_BY_REF} from './workflows/SORT_READS_BY_REF.nf'
@@ -55,6 +56,9 @@ log.info """${ANSI_RESET}
     --consensus_mnf            : ${params.consensus_mnf}
     --ivar_min_depth           : ${params.ivar_min_depth}
     --ivar_freq_threshold      : ${params.ivar_freq_threshold}
+
+  --> GENERATE_CLASSIFICATION_REPORT workflow parameters:
+    --min_coverage_percent  : ${params.min_coverage_percent}
 
   --> viral subtyping branching parameters:
     --scv2_keyword             : ${params.scv2_keyword}
@@ -212,6 +216,7 @@ def check_main_params(){
         errors += __check_if_params_file_exist("consensus_mnf", params.consensus_mnf)
     }
 
+    errors += check_classification_report_params()
     if (errors > 0) {
         log.error("Parameter errors were found, the pipeline will not run.")
         exit 1

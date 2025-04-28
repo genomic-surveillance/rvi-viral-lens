@@ -57,7 +57,16 @@ workflow GENERATE_CLASSIFICATION_REPORT {
     main:
     
         // Create a report line for every sample and then aggregate them
-        report_lines_ch = meta_ch.map{it ->
+        report_lines_ch = meta_ch
+        .branch{ it ->
+            sample_cov = it[0].percentage_genome_coverage as Float
+            min_cov = params.min_coverage_percent as Float
+
+            valid: sample_cov > min_cov
+            not_valid: sample_cov <= min_cov
+        }
+
+        report_lines_ch.valid.map{it ->
             // convert null values for type and segments to None strings
             if (it[0].virus_subtype == null){
                 virus_subtype='None'
@@ -81,7 +90,7 @@ workflow GENERATE_CLASSIFICATION_REPORT {
         }.collect()
 
         // Write all of the per-sample report lines to a report file
-        write_classification_report(report_lines_ch)
+        write_classification_report(valid_lines_ch)
 
     emit:
         write_classification_report.out // report file
@@ -120,4 +129,36 @@ workflow {
     }
 
     GENERATE_CLASSIFICATION_REPORT(manifest_channel)
+}
+
+
+def check_classification_report_params(){
+    /*
+    -----------------------------------------------------------------
+    Checks for necessary parameters and validates paths to ensure 
+    they exist. Logs errors if any required parameters are missing.
+    -----------------------------------------------------------------
+
+    - **Output**: Number of errors encountered during the checks.
+
+    -----------------------------------------------------------------
+
+    */
+    def errors = 0
+    // Was the min_coverage_percent provided?
+    if (params.min_coverage_percent == null){
+        log.error("No min_coverage_percent set")
+        errors +=1
+    }
+
+    // if provided, check if it is float
+    min_cov_value = params.min_coverage_percent as Float
+
+    // if float, it should be between [0.0,100.0]
+    if (min_cov_value < 0.0 || min_cov_value > 100.0){
+            log.error("min_coverage_percent value set ($min_cov_value) must be >=0.0 and <=100.0")
+            errors +=1
+    }
+
+    return errors
 }
