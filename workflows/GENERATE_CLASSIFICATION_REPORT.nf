@@ -87,7 +87,7 @@ workflow GENERATE_CLASSIFICATION_REPORT {
             qc_info_v = "${it[0].percentage_genome_coverage},${it[0].total_mapped_reads.replace("^M", "")},${it[0].longest_no_N_segment},${it[0].percentage_of_N_bases}"
             mut_info_v = "${it[0].total_mutations},${it[0].n_insertions},${it[0].n_deletions},${it[0].n_snps},${it[0].ti_tv_ratio}"
             "${sample_info_1},${sample_info_2},${qc_info_v},${mut_info_v}\n"
-        }.collect()
+        }.collect().set{valid_lines_ch}
 
         // Write all of the per-sample report lines to a report file
         write_classification_report(valid_lines_ch)
