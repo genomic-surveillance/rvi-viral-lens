@@ -13,8 +13,8 @@ nextflow_process {
                 """
                 // define inputs of the process here. Example:
                 input[0] = [
-                    "test,2222222,SARSCov2,BA.2,,90,200,10,0.5\\n",
-                    "test2,2222221,SARSCov2,BA.1,,80,500,20,0.02\\n"
+                    "test,2222222,SARSCov2,BA.2,,90,200,10,0.5,1,0,0,1,null\\n",
+                    "test2,2222221,SARSCov2,BA.1,,80,500,20,0.02,1,0,0,1,null\\n"
                 ]
                 """
             }
