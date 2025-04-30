@@ -12,7 +12,8 @@ def calculate_mutation_stats(tsv_file):
         'deletions': 0,
         'snps': 0,
         'transitions': 0,
-        'transversions': 0
+        'transversions': 0,
+        "ti_tv_ratio": 0
     }
     
     # Define transition pairs
@@ -26,7 +27,7 @@ def calculate_mutation_stats(tsv_file):
         ('G', 'T'), ('T', 'G'),
         ('G', 'C'), ('C', 'G')
     }
-    
+
     with open(tsv_file, 'r') as f:
         reader = csv.DictReader(f, delimiter='\t')
         
@@ -38,8 +39,8 @@ def calculate_mutation_stats(tsv_file):
                 continue
             
             stats['total_mutations'] += 1
-            ref = row['REF']
-            alt = row['ALT']
+            ref = row['REF'].upper()
+            alt = row['ALT'].upper()
             
             # Check for insertion/deletion/SNP
             # assuming insertion being represented as:
@@ -67,7 +68,7 @@ def calculate_mutation_stats(tsv_file):
         ti_tv_ratio = stats['transitions'] / stats['transversions']
     except ZeroDivisionError:
         ti_tv_ratio = float('inf')
-    
+
     # Print results
     print("Mutation Statistics (PASS=True only):")
     print(f"Total mutations: {stats['total_mutations']}")
@@ -77,7 +78,10 @@ def calculate_mutation_stats(tsv_file):
     print(f"Transitions (Ti): {stats['transitions']}")
     print(f"Transversions (Tv): {stats['transversions']}")
     print(f"Ti/Tv ratio: {ti_tv_ratio:.2f}")
-
+    
+    stats["ti_tv_ratio"] = round(ti_tv_ratio,2)
+    
+    return stats
 def main():
     parser = argparse.ArgumentParser(description='Calculate mutation statistics from TSV file.')
     parser.add_argument('input_file', help='Path to the input TSV file')
