@@ -16,8 +16,17 @@ def calculate_mutation_stats(tsv_file):
     }
     
     # Define transition pairs
-    transitions = {('A', 'G'), ('G', 'A'), ('C', 'T'), ('T', 'C')}
-
+    transitions = {
+        ('A', 'G'), ('G', 'A'), # Purine <-> Purine
+        ('C', 'T'), ('T', 'C')  # Pyrimidine <-> Pyrimidine
+    }
+    transversion = {
+        ('A', 'T'), ('T', 'A'), # Purine <-> Pyrimidine
+        ('A', 'C'), ('C', 'A'),
+        ('G', 'T'), ('T', 'G'),
+        ('G', 'C'), ('C', 'G')
+    }
+    
     with open(tsv_file, 'r') as f:
         reader = csv.DictReader(f, delimiter='\t')
         
@@ -50,7 +59,7 @@ def calculate_mutation_stats(tsv_file):
                 # Check for transition/transversion
                 if (ref, alt) in transitions:
                     stats['transitions'] += 1
-                else:
+                elif (ref, alt) in transversion:
                     stats['transversions'] += 1
     
     # Calculate Ti/Tv ratio
