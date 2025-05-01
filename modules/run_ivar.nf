@@ -1,6 +1,7 @@
 // Copyright (C) 2023 Genome Surveillance Unit/Genome Research Ltd.
 params.ivar_min_depth = 10
-params.ivar_freq_threshold = 0.75
+params.ivar_freq_threshold = 0.75 // Minimum frequency threshold(0 - 1) to call variants (Ivar Default: 0.03)
+params.ivar_min_quality_treshold = 0.20 // Minimum quality score threshold to count base (Ivar Default: 0.20)
 
 process run_ivar{
   /*
@@ -40,6 +41,8 @@ process run_ivar{
    - `ivar_freq_threshold`: Minimum frequency threshold (0 - 1) to call
         consensus. Bases with a frequency below this threshold are not 
         called. The default value is `0.75`.
+   - `ivar_min_quality_treshold`: Minimum quality score threshold to 
+        count base (Ivar Default: 0.20) 
   
   * -----------------------------------------------------------------
   */
@@ -50,10 +53,10 @@ process run_ivar{
   label "ivar"
 
   input:
-    tuple val(meta), path(bams)
+    tuple val(meta), path(bams), path(reference_fasta)
 
   output:
-    tuple val(meta), path("${meta.id}.consensus.fa"), path(mpileup_output)
+    tuple val(meta), path("${meta.id}.consensus.fa"), path(mpileup_output), stdout
 
   script:
     sorted_bam = "${meta.id}.sorted.bam"
@@ -64,6 +67,9 @@ process run_ivar{
 
     samtools mpileup -aa -A -B -d 0 -Q0 ${sorted_bam} > ${mpileup_output}
     cat ${mpileup_output} | ivar consensus -t ${params.ivar_freq_threshold} -m ${params.ivar_min_depth} -n N -p ${meta.id}.consensus
+    cat ${mpileup_output} | ivar variants -t ${params.ivar_freq_threshold} -q ${params.ivar_min_quality_treshold} -r ${reference_fasta} -p ${meta.id}_mutations
+    echo "---"
+    mut_stats.py ${meta.id}_mutations.tsv
     """
 }
 
@@ -112,6 +118,12 @@ process run_ivar{
     - `-m ${params.ivar_min_depth}`: Minimum depth to call consensus.
     - `-n N`: Set `N` as the character to print in regions with less than minimum coverage.
     - `-p ${meta.id}.consensus`: Specifies the prefix for the output consensus sequence file.
+
+- `ivar variants`:  call variants - single nucleotide variants(SNVs) and indels.
+    - `-t ${params.ivar_freq_threshold}`: Minimum frequency threshold(0 - 1) to call variants (Default: 0.03)
+    - `-q ${params.ivar_min_quality_treshold}`: Minimum quality score threshold to count base (Default: 20)
+    - `-r ${reference_fasta}`: Reference file used for alignment
+    - `-p ${meta.id}`: Prefix for the output tsv variant file
 
 Information about parameters were obtained from 
   - [samtools mpileup documentation](http://www.htslib.org/doc/samtools-mpileup.html)

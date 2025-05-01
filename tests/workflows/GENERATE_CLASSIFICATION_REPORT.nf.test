@@ -20,8 +20,12 @@ nextflow_workflow {
                     ref_selected:"Severe acute respiratory syndrome coronavirus 2",
                     total_mapped_reads:"200",
                     longest_no_N_segment:"10",
-                    percentage_of_N_bases:"0.5"
-                    ],
+                    percentage_of_N_bases:"0.5",
+                    total_mutations:"1",
+                    n_insertions:"0",
+                    n_deletions:"0",
+                    n_snps:"1",
+                    ti_tv_ratio:"null"
                 ]
 
                 meta_random = [
