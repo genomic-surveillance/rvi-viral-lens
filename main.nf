@@ -56,6 +56,9 @@ log.info """${ANSI_RESET}
     --ivar_min_depth           : ${params.ivar_min_depth}
     --ivar_freq_threshold      : ${params.ivar_freq_threshold}
 
+  --> GENERATE_CLASSIFICATION_REPORT workflow parameters:
+    --min_reads_for_report     : ${params.min_reads_for_report}
+
   --> viral subtyping branching parameters:
     --scv2_keyword             : ${params.scv2_keyword}
 
