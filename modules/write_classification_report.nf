@@ -41,7 +41,10 @@ process write_classification_report {
         echo "Sample_ID,Virus_Taxon_ID,Virus,Species,Reference_Taxon_ID,Selected_Reference,Flu_Segment,Reference_Subtype,Sample_Subtype,Percentage_of_Genome_Covered,Total_Mapped_Reads,Longest_non_N_segment,Percentage_of_N_bases" > ${output_report_file}_pre
 
         # Write data lines to report file
-        echo "${report_lines}" >> ${output_report_file}_pre
+        echo "${report_lines}" \
+        | awk -F',' -v min_reads=${params.min_reads_for_report} 'int($11) >= min_reads' \
+        >> ${output_report_file}_pre
+
         sed -e "s/\r//g" ${output_report_file}_pre > ${output_report_file}
         # NOTE: the sed expression is there to remove "^M" added characteres
         """
@@ -72,8 +75,15 @@ The output report file is named classification_report.csv.
 
 4. **Write Data Lines**:
 
-    - Command: `echo "${report_lines}" >> ${output_report_file}_pre`
-    - Appends the processed data lines (${report_lines}) to the pre-output file.
+    - Command:
+    ```
+    echo "${report_lines}" \
+    | awk -F',' -v min_reads=${params.min_reads_for_report} 'int($11) >= min_reads' \
+    >> ${output_report_file}_pre
+    ```
+    - Appends the processed data lines (${report_lines}) to the pre-output
+    file if the 11th column (Total_Mapped_Reads) has a value greater than
+    or equal to the params.min_mapped_reads value (default = 100).
 
 5. **Remove Carriage Return Characters**:
 
