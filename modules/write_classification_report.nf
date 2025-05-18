@@ -42,7 +42,7 @@ process write_classification_report {
 
         # Write data lines to report file
         echo "${report_lines}" \
-        | awk -F',' -v min_reads=${params.min_reads_for_report} 'int($11) >= min_reads' \
+        | awk -F',' -v min_reads=${params.min_reads_for_report} 'int(\$11) >= min_reads' \
         >> ${output_report_file}_pre
 
         sed -e "s/\r//g" ${output_report_file}_pre > ${output_report_file}
@@ -78,7 +78,7 @@ The output report file is named classification_report.csv.
     - Command:
     ```
     echo "${report_lines}" \
-    | awk -F',' -v min_reads=${params.min_reads_for_report} 'int($11) >= min_reads' \
+    | awk -F',' -v min_reads=${params.min_reads_for_report} 'int(\$11) >= min_reads' \
     >> ${output_report_file}_pre
     ```
     - Appends the processed data lines (${report_lines}) to the pre-output
