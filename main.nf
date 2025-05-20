@@ -5,7 +5,7 @@
 nextflow.enable.dsl = 2
 
 // --- import modules ---------------------------------------------------------
-include {check_generate_consensus_params; parse_consensus_mnf_meta} from './workflows/GENERATE_CONSENSUS.nf'
+include {check_generate_consensus_params} from './workflows/GENERATE_CONSENSUS.nf'
 include {check_sort_reads_params} from './workflows/SORT_READS_BY_REF.nf'
 include {check_classification_report_params} from './workflows/GENERATE_CLASSIFICATION_REPORT.nf'
 include { validateParameters; paramsSummaryLog} from 'plugin/nf-schema'
@@ -15,7 +15,6 @@ include {GENERATE_CONSENSUS} from './workflows/GENERATE_CONSENSUS.nf'
 include {SCOV2_SUBTYPING} from './workflows/SCOV2_SUBTYPING.nf'
 include {COMPUTE_QC_METRICS} from './workflows/COMPUTE_QC_METRICS.nf'
 include {GENERATE_CLASSIFICATION_REPORT} from './workflows/GENERATE_CLASSIFICATION_REPORT.nf'
-include {PREPROCESSING} from './rvi_toolbox/subworkflows/PREPROCESSING.nf'
 
 
 /*
@@ -95,34 +94,18 @@ workflow {
     // ==========================
     reads_ch = parse_mnf(params.manifest)
 
-    // === 1 - PREPROCESSING ===
-    if (params.run_preprocessing){
-      PREPROCESSING(reads_ch)
-      reads_ch = PREPROCESSING.out
-    }
     // ==========================
     // === 2 - Map reads to taxid
-    if (params.entry_point == "sort_reads"){
-        // check if 
-        SORT_READS_BY_REF(reads_ch)
-        sample_taxid_ch = SORT_READS_BY_REF.out.sample_taxid_ch // tuple (meta, reads)
-        sample_pre_report_ch = SORT_READS_BY_REF.out.sample_pre_report_ch
-    }
+    SORT_READS_BY_REF(reads_ch)
+    sample_taxid_ch = SORT_READS_BY_REF.out.sample_taxid_ch // tuple (meta, reads)
+    sample_pre_report_ch = SORT_READS_BY_REF.out.sample_pre_report_ch
 
     // === 3 - Generate consensus ==
-    if (params.entry_point == "consensus_gen"){
-        // process manifest
-        sample_taxid_ch = parse_consensus_mnf_meta(params.consensus_mnf)
-        // TODO we need to add pre_report
-    }
-
     GENERATE_CONSENSUS(sample_taxid_ch)
 
     // === 4 - Compute QC Metrics
-    
     COMPUTE_QC_METRICS(GENERATE_CONSENSUS.out)
-    
-    
+
     // === 5 - branching output from QC for viral specific subtyping
 
     // 5.1 - process pre_report files
@@ -175,7 +158,6 @@ workflow {
     .set{report_in_ch}
 
   GENERATE_CLASSIFICATION_REPORT(report_in_ch)
-
 }
 
 def __check_if_params_file_exist(param_name, param_value){
