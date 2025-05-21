@@ -36,12 +36,6 @@ log.info """${ANSI_RESET}
     --entry_point              : ${params.entry_point}
     --containers_dir           : ${params.containers_dir}
     --outdir                   : ${params.outdir}
-    --run_preprocessing         : ${params.run_preprocessing}
-
-  --> PREPROCESSING workflow parameters:
-    --run_trimmomatic          : ${params.run_trimmomatic}
-    --run_trf                  : ${params.run_trf}
-    --run_hrr                  : ${params.run_hrr}
 
   --> SORT_READS_BY_REF workflow parameters:
     --manifest                   : ${params.manifest}
@@ -52,7 +46,6 @@ log.info """${ANSI_RESET}
     --k2r_dump_fq_mem            : ${params.k2r_dump_fq_mem}
 
   --> GENERATE_CONSENSUS workflow parameters:
-    --consensus_mnf            : ${params.consensus_mnf}
     --ivar_min_depth           : ${params.ivar_min_depth}
     --ivar_freq_threshold      : ${params.ivar_freq_threshold}
 
@@ -181,22 +174,8 @@ def __check_if_params_file_exist(param_name, param_value){
 def check_main_params(){
 
     def errors = 0
-    def valid_entry_points = ["sort_reads", "consensus_gen"]
-    
-    // check if execution mode is valid
-    if (!valid_entry_points.contains(params.entry_point)){
-        log.error("The execution mode provided (${params.entry_point}) is not valid. valid modes = ${valid_entry_points}")
-        errors += 1
-    }
 
-    if (params.entry_point == "sort_reads"){
-        errors += check_sort_reads_params()
-    }
-
-    if (params.entry_point=="consensus_gen"){
-        // check if manifest was provided
-        errors += __check_if_params_file_exist("consensus_mnf", params.consensus_mnf)
-    }
+    errors += check_sort_reads_params()
 
     errors += check_classification_report_params()
     if (errors > 0) {
@@ -224,7 +203,7 @@ workflow.onComplete {
   """.stripIndent()
 }
 
-def parse_mnf(consensus_mnf) {
+def parse_mnf(mnf) {
     /*
     -----------------------------------------------------------------
     Parses the manifest file to create a channel of metadata and 
@@ -237,7 +216,7 @@ def parse_mnf(consensus_mnf) {
     -----------------------------------------------------------------
 
     - **Input**:
-        consensus_mnf (path to the manifest file)
+        mnf (path to the manifest file)
 
     - **Output**: 
         Channel with tuples of metadata and FASTQ file pairs.
@@ -245,7 +224,7 @@ def parse_mnf(consensus_mnf) {
     -----------------------------------------------------------------
     */
     // Read manifest file into a list of rows
-    def mnf_rows = Channel.fromPath(consensus_mnf)
+    def mnf_rows = Channel.fromPath(mnf)
                           | splitCsv(header: true, sep: ',')
 
     // Collect sample IDs and validate
