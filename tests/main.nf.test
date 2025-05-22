@@ -42,7 +42,6 @@ nextflow_pipeline {
     test("Should fail if invalid min_coverage_percent") {
        when{ 
         params {
-            run_preprocessing=false
             db_path="${projectDir}/tests/test_data/test_kraken_databases/minimal"
             manifest="${projectDir}/tests/test_data/test_manifests/test_input_manifest_located.csv"
             min_coverage_percent = "notAFloat"
@@ -59,7 +58,6 @@ nextflow_pipeline {
     test("Should fail if min_coverage_percent not between 0.0 and 100.0") {
        when{ 
         params {
-            run_preprocessing=false
             db_path="${projectDir}/tests/test_data/test_kraken_databases/minimal"
             manifest="${projectDir}/tests/test_data/test_manifests/test_input_manifest_located.csv"
             min_coverage_percent = 200.0
@@ -133,7 +131,6 @@ nextflow_pipeline {
 
         when {
             params {
-                run_preprocessing=false
                 test_loc="${projectDir}/tests/test_data"
                 db_path="${projectDir}/tests/test_data/test_kraken_databases/minimal"
                 manifest="${params.test_loc}/test_manifest_checks/mixed_errors_mnf_located.csv"
@@ -155,9 +152,6 @@ nextflow_pipeline {
 
         when {
             params {
-                // define parameters here. Example: 
-                // outdir = "tests/results"
-                run_preprocessing=false
                 db_path="${projectDir}/tests/test_data/test_kraken_databases/minimal"
                 manifest="${projectDir}/tests/test_data/test_manifests/test_input_manifest_located.csv"
             }

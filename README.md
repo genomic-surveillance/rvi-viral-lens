@@ -30,7 +30,6 @@ This pipeline will generate, if possible, high quality consensus sequences for e
     - [Kraken2ref Report Filter](#kraken2ref-report-filter)
     - [iVar Parameters](#ivar-parameters)
     - [Virus Subtyping](#virus-subtyping)
-    - [Consensus Generation](#consensus-generation)
     - [Output Directory](#output-directory)
     - [General](#general)
   - [Containerization](#containerization)
@@ -67,8 +66,6 @@ This pipeline will generate, if possible, high quality consensus sequences for e
 
 The pipeline takes a manifest containing  **fastq pairs file** paths and a **kraken detabase** as inputs (check [Inputs section](#inputs) for more details) and outputs a **classification report**, **consensus sequences** and a **collection of intermediate files**. Here is an broad overview of the pipeline logic
 
-0. **Preprocessing** (Optional): An optional preprocessing workflow is provided on this pipeline. The Preprocessing pipeline remove adapters (via `trimmomatic`), tandem repeats (via `TRF`) and remove human reads (via `sra-human-scrubber`) from fastq files.
-
 1. **Sort Reads**: The initial step is sort reads using `kraken2` for each fastq pairs according to the database provided. The classified reads is used as input to [kraken2ref](https://github.com/genomic-surveillance/kraken2ref) which will generate one pair of fastq files per taxid found.
    - An option to split big files is provided (check [Parameter section](#parameters)).
 
@@ -79,7 +76,6 @@ The pipeline takes a manifest containing  **fastq pairs file** paths and a **kra
 
 4. **SARS-CoV-2 Subtyping**: SARS-CoV-2 subtyping can be done if present on the sample
 
->**NOTE**: An optional preprocessing workflow is provided 
 
 ---
 
@@ -387,7 +383,6 @@ The `params` block defines key user-modifiable settings for the workflow.
 
 #### Pipeline Flow Controls
 
-- `entry_point` [Default = `"sort_reads"`]: Entry point for the workflow. It can be set to `"sort_reads"` or `"consensus_gen"`.
 - `do_scov2_subtyping` [Default = `true`] : Switch SARS-CoV-2 on and off.
 - `scv2_keyword` [Default = `"Severe acute respiratory syndrome coronavirus 2"`] : keyword to identified samples with SARS-CoV-2. This string is obtained from the kraken2 database, therefore, it should be in line with the database in use.
 
@@ -425,10 +420,6 @@ The `params` block defines key user-modifiable settings for the workflow.
 
 - `do_scov2_subtyping`: Boolean flag to enable or disable SARS-CoV-2 subtyping via Pangolin.
   - Default: `true`.
-
-#### Consensus Generation
-
-- `consensus_mnf` [OPTIONAL]: Path to the consensus manifest file (default: `null`).
 
 #### Classification report
 
@@ -512,7 +503,7 @@ Certain processes are configured to run on the LSF scheduler with specific resou
 
 **Job Naming and Memory Management**
 
-- `jobName`: Custom job name format for LSF jobs, based on the task name and tag (`"RVI-preprocess - $task.name - $task.tag"`).
+- `jobName`: Custom job name format for LSF jobs, based on the task name and tag (`"RVI-viral-lens - $task.name - $task.tag"`).
 
 - `perJobMemLimit=true`: Ensures that memory limits are set per job.
 

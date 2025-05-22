@@ -5,7 +5,7 @@
 nextflow.enable.dsl = 2
 
 // --- import modules ---------------------------------------------------------
-include {check_generate_consensus_params; parse_consensus_mnf_meta} from './workflows/GENERATE_CONSENSUS.nf'
+include {check_generate_consensus_params} from './workflows/GENERATE_CONSENSUS.nf'
 include {check_sort_reads_params} from './workflows/SORT_READS_BY_REF.nf'
 include {check_classification_report_params} from './workflows/GENERATE_CLASSIFICATION_REPORT.nf'
 include { validateParameters; paramsSummaryLog} from 'plugin/nf-schema'
@@ -15,7 +15,6 @@ include {GENERATE_CONSENSUS} from './workflows/GENERATE_CONSENSUS.nf'
 include {SCOV2_SUBTYPING} from './workflows/SCOV2_SUBTYPING.nf'
 include {COMPUTE_QC_METRICS} from './workflows/COMPUTE_QC_METRICS.nf'
 include {GENERATE_CLASSIFICATION_REPORT} from './workflows/GENERATE_CLASSIFICATION_REPORT.nf'
-include {PREPROCESSING} from './rvi_toolbox/subworkflows/PREPROCESSING.nf'
 
 
 /*
@@ -37,12 +36,6 @@ log.info """${ANSI_RESET}
     --entry_point              : ${params.entry_point}
     --containers_dir           : ${params.containers_dir}
     --outdir                   : ${params.outdir}
-    --run_preprocessing         : ${params.run_preprocessing}
-
-  --> PREPROCESSING workflow parameters:
-    --run_trimmomatic          : ${params.run_trimmomatic}
-    --run_trf                  : ${params.run_trf}
-    --run_hrr                  : ${params.run_hrr}
 
   --> SORT_READS_BY_REF workflow parameters:
     --manifest                   : ${params.manifest}
@@ -53,7 +46,6 @@ log.info """${ANSI_RESET}
     --k2r_dump_fq_mem            : ${params.k2r_dump_fq_mem}
 
   --> GENERATE_CONSENSUS workflow parameters:
-    --consensus_mnf            : ${params.consensus_mnf}
     --ivar_min_depth           : ${params.ivar_min_depth}
     --ivar_freq_threshold      : ${params.ivar_freq_threshold}
 
@@ -95,34 +87,18 @@ workflow {
     // ==========================
     reads_ch = parse_mnf(params.manifest)
 
-    // === 1 - PREPROCESSING ===
-    if (params.run_preprocessing){
-      PREPROCESSING(reads_ch)
-      reads_ch = PREPROCESSING.out
-    }
     // ==========================
     // === 2 - Map reads to taxid
-    if (params.entry_point == "sort_reads"){
-        // check if 
-        SORT_READS_BY_REF(reads_ch)
-        sample_taxid_ch = SORT_READS_BY_REF.out.sample_taxid_ch // tuple (meta, reads)
-        sample_pre_report_ch = SORT_READS_BY_REF.out.sample_pre_report_ch
-    }
+    SORT_READS_BY_REF(reads_ch)
+    sample_taxid_ch = SORT_READS_BY_REF.out.sample_taxid_ch // tuple (meta, reads)
+    sample_pre_report_ch = SORT_READS_BY_REF.out.sample_pre_report_ch
 
     // === 3 - Generate consensus ==
-    if (params.entry_point == "consensus_gen"){
-        // process manifest
-        sample_taxid_ch = parse_consensus_mnf_meta(params.consensus_mnf)
-        // TODO we need to add pre_report
-    }
-
     GENERATE_CONSENSUS(sample_taxid_ch)
 
     // === 4 - Compute QC Metrics
-    
     COMPUTE_QC_METRICS(GENERATE_CONSENSUS.out)
-    
-    
+
     // === 5 - branching output from QC for viral specific subtyping
 
     // 5.1 - process pre_report files
@@ -175,7 +151,6 @@ workflow {
     .set{report_in_ch}
 
   GENERATE_CLASSIFICATION_REPORT(report_in_ch)
-
 }
 
 def __check_if_params_file_exist(param_name, param_value){
@@ -199,22 +174,8 @@ def __check_if_params_file_exist(param_name, param_value){
 def check_main_params(){
 
     def errors = 0
-    def valid_entry_points = ["sort_reads", "consensus_gen"]
-    
-    // check if execution mode is valid
-    if (!valid_entry_points.contains(params.entry_point)){
-        log.error("The execution mode provided (${params.entry_point}) is not valid. valid modes = ${valid_entry_points}")
-        errors += 1
-    }
 
-    if (params.entry_point == "sort_reads"){
-        errors += check_sort_reads_params()
-    }
-
-    if (params.entry_point=="consensus_gen"){
-        // check if manifest was provided
-        errors += __check_if_params_file_exist("consensus_mnf", params.consensus_mnf)
-    }
+    errors += check_sort_reads_params()
 
     errors += check_classification_report_params()
     if (errors > 0) {
@@ -242,7 +203,7 @@ workflow.onComplete {
   """.stripIndent()
 }
 
-def parse_mnf(consensus_mnf) {
+def parse_mnf(mnf) {
     /*
     -----------------------------------------------------------------
     Parses the manifest file to create a channel of metadata and 
@@ -255,7 +216,7 @@ def parse_mnf(consensus_mnf) {
     -----------------------------------------------------------------
 
     - **Input**:
-        consensus_mnf (path to the manifest file)
+        mnf (path to the manifest file)
 
     - **Output**: 
         Channel with tuples of metadata and FASTQ file pairs.
@@ -263,7 +224,7 @@ def parse_mnf(consensus_mnf) {
     -----------------------------------------------------------------
     */
     // Read manifest file into a list of rows
-    def mnf_rows = Channel.fromPath(consensus_mnf)
+    def mnf_rows = Channel.fromPath(mnf)
                           | splitCsv(header: true, sep: ',')
 
     // Collect sample IDs and validate

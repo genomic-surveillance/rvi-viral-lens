@@ -4,6 +4,9 @@ All notable changes to this project will be documented in this file.
 
 ## [UNRELEASED]
 
+- **[removed]**: remove entry points
+- **[removed]**: `PREPROCESSING` workflow removed
+- **[fix]**: tests don't use `sanger_standard` profile by default
 - **[added]**: reimplement ivar variants and add mutation statistics
 - **[added]**: `min_coverage_percent` parameter added
 

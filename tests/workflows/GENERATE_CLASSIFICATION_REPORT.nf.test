@@ -9,7 +9,7 @@ nextflow_workflow {
 
         when {
             params {
-                meta = [
+                meta =
                     [
                     sample_id:"test",
                     taxid:"2222222",
@@ -28,7 +28,7 @@ nextflow_workflow {
                     ti_tv_ratio:"null"
                 ]
 
-                meta_random = [
+                meta_random =
                     [
                     sample_id:"artifact",
                     taxid:"333333",
@@ -41,7 +41,7 @@ nextflow_workflow {
                     longest_no_N_segment:"9",
                     percentage_of_N_bases:"0.95"
                     ]
-                ]
+
                 min_coverage_percent = 10
 
             }
