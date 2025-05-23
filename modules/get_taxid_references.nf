@@ -37,7 +37,6 @@ process get_taxid_reference_files{
     */
 
     tag "${taxid}"
-    publishDir "${params.outdir}/reference_files/${taxid}/", mode: 'copy'
 
 
     input:

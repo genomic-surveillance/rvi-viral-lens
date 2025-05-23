@@ -23,8 +23,8 @@ process write_classification_report {
 
     * ---------------------------------------------------------------
     */
-
-    publishDir "${params.outdir}/", mode: 'copy'
+    label "run_output"
+    //publishDir "${params.outdir}/", mode: 'copy'
 
     input:
         val(list_of_report_lines)

@@ -31,7 +31,7 @@ process run_k2r_sort_reads {
     cache 'lenient'
     label 'kraken2ref'
     label 'mem_k2r_escalate'
-    publishDir "${params.outdir}/${meta.id}/reads_by_taxon/", mode: 'copy', pattern: "*.{json,tsv,log}"
+    label 'k2r_intermediate_output'
 
     input:
         tuple val(meta), path(kraken_output), path(kraken_report)
@@ -123,8 +123,8 @@ process run_k2r_dump_fastqs_and_pre_report {
     tag "${meta.id} - ${task.attempt} - ${task.memory}"
     cache 'lenient'
     label 'kraken2ref'
+    label 'k2r_intermediate_output'
     memory params.k2r_dump_fq_mem//'mem_k2r_escalate'
-    publishDir "${params.outdir}/${meta.id}/reads_by_taxon/", mode: 'copy', pattern: "*.{fq,tsv}"
 
     input:
         tuple val(meta), path(classified_fqs), path(json_tax_to_readsid), path(decomposed_json), path(kraken_report)
