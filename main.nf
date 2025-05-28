@@ -269,7 +269,11 @@ def parse_mnf(mnf) {
     def mnf_ch = mnf_rows.map { row -> 
                     // set meta
                     def meta = [
+                      // id is internal to the pipeline and taxid 
+                      // is added to it latter
                       id: row.sample_id,
+                      // sample_id is explictily used on the 
+                      // publishing of files paths
                       sample_id: row.sample_id
                     ]
                     // set files
