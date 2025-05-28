@@ -268,7 +268,14 @@ def parse_mnf(mnf) {
     // If validation passed, create the channel as before
     def mnf_ch = mnf_rows.map { row -> 
                     // set meta
-                    def meta = [id: row.sample_id]
+                    def meta = [
+                      // id is internal to the pipeline and taxid 
+                      // is added to it latter
+                      id: row.sample_id,
+                      // sample_id is explictily used on the 
+                      // publishing of files paths
+                      sample_id: row.sample_id
+                    ]
                     // set files
                     def reads = [row.reads_1, row.reads_2]
                     // declare channel shape
