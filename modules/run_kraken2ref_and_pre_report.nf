@@ -31,7 +31,6 @@ process run_k2r_sort_reads {
     cache 'lenient'
     label 'kraken2ref'
     label 'mem_k2r_escalate'
-    label 'k2r_intermediate_output'
 
     input:
         tuple val(meta), path(kraken_output), path(kraken_report)
@@ -123,7 +122,6 @@ process run_k2r_dump_fastqs_and_pre_report {
     tag "${meta.id} - ${task.attempt} - ${task.memory}"
     cache 'lenient'
     label 'kraken2ref'
-    label 'k2r_intermediate_output'
     memory params.k2r_dump_fq_mem//'mem_k2r_escalate'
 
     input:

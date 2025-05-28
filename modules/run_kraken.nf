@@ -37,7 +37,6 @@ process run_kraken {
     label "kraken"
     label 'mem_2'
     label "cpu_16"
-    label "intermediate_output"
 
     input:
         tuple val(meta), path(fastqs) // tuple(sample_id, [fastq_pairs])
