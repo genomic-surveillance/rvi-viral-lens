@@ -3,7 +3,7 @@
 All notable changes to this project will be documented in this file.
 
 ## [UNRELEASED]
-
+- **[added]**: add report output with non-valid sequences
 - **[removed]**: remove entry points
 - **[removed]**: `PREPROCESSING` workflow removed
 - **[fix]**: tests don't use `sanger_standard` profile by default
