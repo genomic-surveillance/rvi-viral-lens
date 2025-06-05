@@ -1,7 +1,7 @@
 // Copyright (C) 2023 Genome Surveillance Unit/Genome Research Ltd.
 
 include {write_classification_report} from '../modules/write_classification_report.nf'
-
+include {write_classification_report as write_invalid_classification_report} from '../modules/write_classification_report.nf'
 workflow GENERATE_CLASSIFICATION_REPORT {
     /*
     -----------------------------------------------------------------
@@ -82,15 +82,41 @@ workflow GENERATE_CLASSIFICATION_REPORT {
             // sample_id, virus, report_name, virus_name, taxid, reference_selected, flu_segment, 
             // virus_subtype, sample_subtype, percentage_genome_coverage, total_mapped_reads,
             // longest_no_N_segment, percentage_of_N_bases
-            sample_info_1 = "${it[0].sample_id},${it[0].virus},${it[0].report_name},${it[0].virus_name}"
-            sample_info_2 = "${it[0].taxid},${it[0].ref_selected.replace(",","|")},${flu_segment},${virus_subtype},${it[0].sample_subtype}"
-            qc_info_v = "${it[0].percentage_genome_coverage},${it[0].total_mapped_reads.replace("^M", "")},${it[0].longest_no_N_segment},${it[0].percentage_of_N_bases}"
-            mut_info_v = "${it[0].total_mutations},${it[0].n_insertions},${it[0].n_deletions},${it[0].n_snps},${it[0].ti_tv_ratio}"
+            def sample_info_1 = "${it[0].sample_id},${it[0].virus},${it[0].report_name},${it[0].virus_name}"
+            def sample_info_2 = "${it[0].taxid},${it[0].ref_selected.replace(",","|")},${flu_segment},${virus_subtype},${it[0].sample_subtype}"
+            def qc_info_v = "${it[0].percentage_genome_coverage},${it[0].total_mapped_reads.replace("^M", "")},${it[0].longest_no_N_segment},${it[0].percentage_of_N_bases}"
+            def mut_info_v = "${it[0].total_mutations},${it[0].n_insertions},${it[0].n_deletions},${it[0].n_snps},${it[0].ti_tv_ratio}"
             "${sample_info_1},${sample_info_2},${qc_info_v},${mut_info_v}\n"
         }.collect().set{valid_lines_ch}
 
         // Write all of the per-sample report lines to a report file
-        write_classification_report(valid_lines_ch)
+        write_classification_report(valid_lines_ch, "classification_report")
+
+        // write non valid report
+        report_lines_ch.not_valid.map{it ->
+            // convert null values for type and segments to None strings
+            if (it[0].virus_subtype == null){
+                def virus_subtype='None'
+            } else {
+                def virus_subtype = it[0].virus_subtype
+            }
+
+            if (it[0].flu_segment==null){
+                def flu_segment='None'
+            } else {
+                def flu_segment = it[0].flu_segment
+            }
+            // sample_id, virus, report_name, virus_name, taxid, reference_selected, flu_segment, 
+            // virus_subtype, sample_subtype, percentage_genome_coverage, total_mapped_reads,
+            // longest_no_N_segment, percentage_of_N_bases
+            def sample_info_1 = "${it[0].sample_id},${it[0].virus},${it[0].report_name},${it[0].virus_name}"
+            def sample_info_2 = "${it[0].taxid},${it[0].ref_selected.replace(",","|")},${flu_segment},${virus_subtype},${it[0].sample_subtype}"
+            def qc_info_v = "${it[0].percentage_genome_coverage},${it[0].total_mapped_reads.replace("^M", "")},${it[0].longest_no_N_segment},${it[0].percentage_of_N_bases}"
+            def mut_info_v = "${it[0].total_mutations},${it[0].n_insertions},${it[0].n_deletions},${it[0].n_snps},${it[0].ti_tv_ratio}"
+            "${sample_info_1},${sample_info_2},${qc_info_v},${mut_info_v}\n"
+        }.collect().set{not_valid_lines_ch}
+
+        write_invalid_classification_report(not_valid_lines_ch, "classification_report_invalid")
 
     emit:
         write_classification_report.out // report file
