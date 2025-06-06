@@ -64,7 +64,7 @@ This pipeline will generate, if possible, high quality consensus sequences for e
 
 ## Pipeline Summary
 
-The pipeline takes a manifest containing  **fastq pairs file** paths and a **kraken detabase** as inputs (check [Inputs section](#inputs) for more details) and outputs a **classification report**, **consensus sequences** and a **collection of intermediate files**. Here is an broad overview of the pipeline logic
+The pipeline takes a manifest containing  **fastq pairs file** paths and a **kraken detabase** as inputs (check [Inputs section](#inputs) for more details) and outputs a **classification report**, **consensus sequences** and a (optionally) **collection of intermediate files**. Here is an broad overview of the pipeline logic
 
 1. **Sort Reads**: The initial step is sort reads using `kraken2` for each fastq pairs according to the database provided. The classified reads is used as input to [kraken2ref](https://github.com/genomic-surveillance/kraken2ref) which will generate one pair of fastq files per taxid found.
    - An option to split big files is provided (check [Parameter section](#parameters)).
@@ -608,7 +608,7 @@ The `SCOV2_SUBTYPING` workflow is designed to determine the SARS-CoV-2 lineage (
 
 #### GENERATE_CLASSIFICATION_REPORT
 
-The GENERATE_CLASSIFICATION_REPORT workflow generates a classification report based on metadata associated with sequencing samples. This workflow collects metadata from each sample, formats the data into a report line, and aggregates these lines into a final classification report file.
+The GENERATE_CLASSIFICATION_REPORT workflow generates a classification report based on metadata associated with sequencing samples. This workflow collects metadata from each sample, formats the data into a report line, and aggregates these lines into a final classification report file. A report file with filtered out sequences is written as well.
 
 ### Custom pipeline scripts
 

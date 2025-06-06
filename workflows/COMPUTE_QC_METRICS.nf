@@ -59,7 +59,7 @@ workflow COMPUTE_QC_METRICS {
         // populate meta with the qc values
         run_qc_script.out
             | map {meta, qc_csv, stdout_str -> 
-                tokens_lst = stdout_str.tokenize(",")
+                def tokens_lst = stdout_str.tokenize(",")
                 meta.percentage_of_N_bases = tokens_lst[1] // Proportion of ambiguous bases in the consensus sequence.
                 meta.percentage_genome_coverage = tokens_lst[2] // Proportion of the genome covered by aligned reads.
                 meta.longest_no_N_segment = tokens_lst[3] // The longest continuous segment without N bases.
@@ -84,7 +84,7 @@ workflow {
     manifest_channel = Channel.fromPath(params.manifest_file)
     | splitCsv(header: true, sep: ',')
     | map { row ->
-        meta = [id:row.id,
+        def meta = [id:row.id,
             taxid:row.taxid,
             sample_id:row.sample_id,
             bam_file:row.bam_file,

@@ -28,13 +28,13 @@ process write_classification_report {
 
     input:
         val(list_of_report_lines)
-
+        val(report_filename)
     output:
         path(output_report_file)
 
     script:
-        output_report_file = "classification_report.csv"
-        // Replace " with ' to prevent issues with writing lines to file 
+        output_report_file = "${report_filename}.csv"
+        // Replace " with ' to prevent issues with writing lines to file
         sample_headers_1="Sample_ID,Virus_Taxon_ID,Virus,Species"
         sample_headers_2="Reference_Taxon_ID,Selected_Reference,Flu_Segment,Reference_Subtype,Sample_Subtype"
         qc_headers="Percentage_of_Genome_Covered,Total_Mapped_Reads,Longest_non_N_segment,Percentage_of_N_bases"

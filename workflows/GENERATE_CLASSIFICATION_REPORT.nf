@@ -1,7 +1,7 @@
 // Copyright (C) 2023 Genome Surveillance Unit/Genome Research Ltd.
 
 include {write_classification_report} from '../modules/write_classification_report.nf'
-
+include {write_classification_report as write_invalid_classification_report} from '../modules/write_classification_report.nf'
 workflow GENERATE_CLASSIFICATION_REPORT {
     /*
     -----------------------------------------------------------------
@@ -59,8 +59,8 @@ workflow GENERATE_CLASSIFICATION_REPORT {
         // Create a report line for every sample and then aggregate them
         report_lines_ch = meta_ch
         .branch{ it ->
-            sample_cov = it[0].percentage_genome_coverage as Float
-            min_cov = params.min_coverage_percent as Float
+            def sample_cov = it[0].percentage_genome_coverage as Float
+            def min_cov = params.min_coverage_percent as Float
 
             valid: sample_cov > min_cov
             not_valid: sample_cov <= min_cov
@@ -68,29 +68,34 @@ workflow GENERATE_CLASSIFICATION_REPORT {
 
         report_lines_ch.valid.map{it ->
             // convert null values for type and segments to None strings
-            if (it[0].virus_subtype == null){
-                virus_subtype='None'
-            } else {
-                virus_subtype = it[0].virus_subtype
-            }
+            // if virus_subtype or flu_segment are null, set them to 'None'
+            def virus_subtype = (it[0].virus_subtype == null) ? 'None' : it[0].virus_subtype
+            // if flu_segment is null, set it to 'None'
+            def flu_segment = (it[0].flu_segment == null) ? 'None' : it[0].flu_segment
 
-            if (it[0].flu_segment==null){
-                flu_segment='None'
-            } else {
-                flu_segment = it[0].flu_segment
-            }
             // sample_id, virus, report_name, virus_name, taxid, reference_selected, flu_segment, 
             // virus_subtype, sample_subtype, percentage_genome_coverage, total_mapped_reads,
             // longest_no_N_segment, percentage_of_N_bases
-            sample_info_1 = "${it[0].sample_id},${it[0].virus},${it[0].report_name},${it[0].virus_name}"
-            sample_info_2 = "${it[0].taxid},${it[0].ref_selected.replace(",","|")},${flu_segment},${virus_subtype},${it[0].sample_subtype}"
-            qc_info_v = "${it[0].percentage_genome_coverage},${it[0].total_mapped_reads.replace("^M", "")},${it[0].longest_no_N_segment},${it[0].percentage_of_N_bases}"
-            mut_info_v = "${it[0].total_mutations},${it[0].n_insertions},${it[0].n_deletions},${it[0].n_snps},${it[0].ti_tv_ratio}"
-            "${sample_info_1},${sample_info_2},${qc_info_v},${mut_info_v}\n"
+            def report_lines = concatenate_report_lines(it[0], flu_segment, virus_subtype)
+
+            report_lines
         }.collect().set{valid_lines_ch}
 
         // Write all of the per-sample report lines to a report file
-        write_classification_report(valid_lines_ch)
+        write_classification_report(valid_lines_ch, "classification_report")
+
+        // write non valid report
+        report_lines_ch.not_valid.map{it ->
+            // if virus_subtype or flu_segment are null, set them to 'None'
+            def virus_subtype = (it[0].virus_subtype == null) ? 'None' : it[0].virus_subtype
+            // if flu_segment is null, set it to 'None'
+            def flu_segment = (it[0].flu_segment == null) ? 'None' : it[0].flu_segment
+
+            def report_lines_invalid = concatenate_report_lines(it[0], flu_segment, virus_subtype)
+            report_lines_invalid
+        }.collect().set{not_valid_lines_ch}
+
+        write_invalid_classification_report(not_valid_lines_ch, "classification_report_invalid")
 
     emit:
         write_classification_report.out // report file
@@ -115,7 +120,7 @@ workflow {
     manifest_channel = Channel.fromPath(params.manifest_file)
     | splitCsv(header: true, sep: ',')
     | map { row ->
-        meta = [[id:row.sample_id,
+        def meta = [[id:row.sample_id,
             taxid:row.taxid,
             ref_selected:row.ref_selected,
             virus_name:row.virus_name,
@@ -131,6 +136,36 @@ workflow {
     GENERATE_CLASSIFICATION_REPORT(manifest_channel)
 }
 
+
+def concatenate_report_lines(meta, flu_segment, virus_subtype) {
+    /*
+    -----------------------------------------------------------------
+    Concatenates a list of report lines into a single string.
+
+    - **Input**: A list of strings, where each string is a line of
+    the report.
+    - **Output**: A single string containing all lines concatenated
+    together, separated by newlines.
+
+    -----------------------------------------------------------------
+
+    */
+    // HEADERS:
+    // sample_info_1:
+    // sample_id, virus, report_name, virus_name, 
+    // sample_info_2:
+    // taxid, reference_selected, flu_segment, virus_subtype, sample_subtype, 
+    // qc_info_v:
+    // percentage_genome_coverage, total_mapped_reads, longest_no_N_segment, percentage_of_N_bases
+    // mut_info_v:
+    // total_mutations,n_insertions,n_deletions,n_snps,ti_tv_ratio
+    
+    def sample_info_1 = "${meta.sample_id},${meta.virus},${meta.report_name},${meta.virus_name}"
+    def sample_info_2 = "${meta.taxid},${meta.ref_selected.replace(",","|")},${flu_segment},${virus_subtype},${meta.sample_subtype}"
+    def qc_info_v = "${meta.percentage_genome_coverage},${meta.total_mapped_reads.replace("^M", "")},${meta.longest_no_N_segment},${meta.percentage_of_N_bases}"
+    def mut_info_v = "${meta.total_mutations},${meta.n_insertions},${meta.n_deletions},${meta.n_snps},${meta.ti_tv_ratio}"
+    return "${sample_info_1},${sample_info_2},${qc_info_v},${mut_info_v}\n"
+}
 
 def check_classification_report_params(){
     /*
@@ -152,7 +187,7 @@ def check_classification_report_params(){
     }
 
     // if provided, check if it is float
-    min_cov_value = params.min_coverage_percent as Float
+    def min_cov_value = params.min_coverage_percent as Float
 
     // if float, it should be between [0.0,100.0]
     if (min_cov_value < 0.0 || min_cov_value > 100.0){

@@ -9,6 +9,7 @@ nextflow_workflow {
 
         when {
             params {
+                outdir = "$launchDir/results/"
                 meta =
                     [
                     sample_id:"test",
@@ -55,7 +56,19 @@ nextflow_workflow {
 
         then {
             assert workflow.success
-	    assert snapshot(workflow.out).match()
+            assert file("${params.outdir}/classification_report.csv").exists()
+            assert file("${params.outdir}/classification_report_invalid.csv").exists()
+            assert file("${params.outdir}/classification_report.csv").size() > 0
+            assert file("${params.outdir}/classification_report_invalid.csv").size() > 0
+            assert file("${params.outdir}/classification_report.csv").text.contains("test")
+            assert file("${params.outdir}/classification_report_invalid.csv").text.contains("artifact")
+            assert file("${params.outdir}/classification_report.csv").text.contains("SARSCov2")
+            assert file("${params.outdir}/classification_report_invalid.csv").text.contains("Random")
+            assert file("${params.outdir}/classification_report.csv").text.contains("BA.2")
+            assert file("${params.outdir}/classification_report.csv").text.contains("90.0")
+            assert file("${params.outdir}/classification_report_invalid.csv").text.contains("5.0")
+            assert snapshot(workflow.out).match()
+        
         }
 
     }

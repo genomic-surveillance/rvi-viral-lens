@@ -17,15 +17,20 @@ include {COMPUTE_QC_METRICS} from './workflows/COMPUTE_QC_METRICS.nf'
 include {GENERATE_CLASSIFICATION_REPORT} from './workflows/GENERATE_CLASSIFICATION_REPORT.nf'
 
 
-/*
-* ANSI escape codes to color output messages
-*/
-ANSI_GREEN = "\033[1;32m"
-ANSI_RED = "\033[1;31m"
-ANSI_RESET = "\033[0m"
-ANSI_BOLD = "\033[1m"
 
-log.info """${ANSI_RESET}
+// Main entry-point workflow
+workflow {
+
+  /*
+  * ANSI escape codes to color output messages
+  */
+  ANSI_GREEN = "\033[1;32m"
+  _ANSI_RED = "\033[1;31m"
+  ANSI_RESET = "\033[0m"
+  _ANSI_BOLD = "\033[1m"
+
+
+  log.info """${ANSI_RESET}
   ===========================================
   Viral Lens [v1.0]
   Used parameters:
@@ -33,7 +38,6 @@ log.info """${ANSI_RESET}
   --> general pipeline parameters:
     --use_local_containers     : ${params.use_local_containers}
     --use_registry_containers  : ${params.use_registry_containers}
-    --entry_point              : ${params.entry_point}
     --containers_dir           : ${params.containers_dir}
     --outdir                   : ${params.outdir}
 
@@ -42,7 +46,7 @@ log.info """${ANSI_RESET}
     --db_path                    : ${params.db_path}
     --db_library_fa_path         : ${params.db_library_fa_path}
     --min_reads_for_taxid        : ${params.min_reads_for_taxid}
-    --k2r_max_total_reads_per_fq : ${params.max_total_reads_per_fq}
+    --k2r_max_total_reads_per_fq : ${params.k2r_max_total_reads_per_fq}
     --k2r_dump_fq_mem            : ${params.k2r_dump_fq_mem}
 
   --> GENERATE_CONSENSUS workflow parameters:
@@ -50,7 +54,7 @@ log.info """${ANSI_RESET}
     --ivar_freq_threshold      : ${params.ivar_freq_threshold}
 
   --> GENERATE_CLASSIFICATION_REPORT workflow parameters:
-    --min_coverage_percent  : ${params.min_coverage_percent}
+    --min_coverage_percent     : ${params.min_coverage_percent}
 
   --> viral subtyping branching parameters:
     --scv2_keyword             : ${params.scv2_keyword}
@@ -74,13 +78,11 @@ log.info """${ANSI_RESET}
   ------------------------------------------
 """.stripIndent()
 
-// Validate input parameters
-validateParameters()
-// Print summary of supplied parameters
-log.info paramsSummaryLog(workflow)
+  // Validate input parameters
+  validateParameters()
+  // Print summary of supplied parameters
+  log.info paramsSummaryLog(workflow)
 
-// Main entry-point workflow
-workflow {
 
     // === 1 - Process input ===
     check_main_params()
@@ -109,7 +111,7 @@ workflow {
       .filter{it -> (it.size() > 1)} // remove empty pre_reports
       .splitCsv(header: true, sep:"\t")
       .map{it -> 
-        id="${it.sample_id}.${it.selected_taxid}"
+        def id="${it.sample_id}.${it.selected_taxid}"
         tuple(id, it)
       }
       .set{sample_report_ch}
@@ -117,13 +119,13 @@ workflow {
     // raise warning for sample taxids which had empty pre_reports
     sample_pre_report_ch
       .filter{it -> (it.size() <= 1)}
-      .view(it -> log.warn("Excluding ${it} as input due to small size ( < 1 byte)"))
+      .view{it -> log.warn("Excluding ${it} as input due to small size ( < 1 byte)")}
 
     // 5.2 - add report info to out qc metric chanel and branch for SCOV2 subtyping
     COMPUTE_QC_METRICS.out // tuple (meta, bam)
       .map { meta, bam -> tuple(meta.id, meta, bam)}
       .join(sample_report_ch)//, by: 0) // tuple (id, meta, bam, report)
-      .map {id, meta, bam, report ->
+      .map {_id, meta, bam, report ->
         meta.putAll(report)
         tuple(meta, bam)
       }
@@ -157,7 +159,7 @@ def __check_if_params_file_exist(param_name, param_value){
   def error = 0
 
   if (!(param_value==null)){
-    param_file = file(param_value)
+    def param_file = file(param_value)
     if (!param_file.exists()){
       log.error("${param_file} does not exist")
       error +=1
@@ -189,7 +191,13 @@ def check_main_params(){
  */
 workflow.onComplete {
   // Log colors ANSI codes
-  
+  /*
+  * ANSI escape codes to color output messages
+  */
+  def ANSI_GREEN = "\033[1;32m"
+  def ANSI_RED = "\033[1;31m"
+  def ANSI_RESET = "\033[0m"
+ 
   println """
   Pipeline execution summary
   ---------------------------
@@ -224,14 +232,13 @@ def parse_mnf(mnf) {
     -----------------------------------------------------------------
     */
     // Read manifest file into a list of rows
-    def mnf_rows = Channel.fromPath(mnf)
-                          | splitCsv(header: true, sep: ',')
+    def mnf_rows = Channel.fromPath(mnf).splitCsv(header: true, sep: ',')
 
     // Collect sample IDs and validate
     def sample_ids = []
     def errors = 0
     
-    def errors_ch = mnf_rows.map { row ->
+    def _errors_ch = mnf_rows.map { row ->
         def sample_id = row.sample_id
 
         // Check if sample_id is empty
@@ -258,7 +265,7 @@ def parse_mnf(mnf) {
         // be sure that the number of errors is evaluated after all rows are processed
         .collect() 
         // kill the pipeline if errors are found
-        .subscribe{ v ->
+        .subscribe{ _v ->
         if (errors > 0) {
             log.error("${errors} critical errors in the manifest were detected. Please check README for more details.")
             exit 1

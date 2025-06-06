@@ -16,6 +16,8 @@ nextflow_process {
                     "test,2222222,SARSCov2,BA.2,,90,200,10,0.5,1,0,0,1,null\\n",
                     "test2,2222221,SARSCov2,BA.1,,80,500,20,0.02,1,0,0,1,null\\n"
                 ]
+                input[1] = "classification_report"
+                // This is the name of the report file to be generated
                 """
             }
         }
