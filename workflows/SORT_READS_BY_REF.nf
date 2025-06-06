@@ -90,8 +90,8 @@ workflow SORT_READS_BY_REF {
                 meta.classified_fq_filepair = classified_fq_filepair
 
                 // get input file sizes to estimate resources usage (cpu and mem) 
-                fq_1_size = classified_fq_filepair[0].size() // byte
-                fq_2_size = classified_fq_filepair[1].size() // byte
+                def fq_1_size = classified_fq_filepair[0].size() // byte
+                def fq_2_size = classified_fq_filepair[1].size() // byte
                 meta.fqs_total_size = fq_1_size + fq_2_size
                 return tuple (meta, kraken_output, kraken_report)
             }
@@ -109,10 +109,9 @@ workflow SORT_READS_BY_REF {
                 meta.decomposed_json = decomposed_json
 
                 // count reads
-                fq_1_n_reads = meta.classified_fq_filepair[0].countFastq()
-                fq_2_n_reads = meta.classified_fq_filepair[1].countFastq()
+                def fq_1_n_reads = meta.classified_fq_filepair[0].countFastq()
+                def fq_2_n_reads = meta.classified_fq_filepair[1].countFastq()
 
-                meta.fqs_total_size = fq_1_size + fq_2_size
                 assert(fq_1_n_reads == fq_2_n_reads)
                 meta.class_fq_n_reads = fq_1_n_reads
                 
@@ -142,7 +141,7 @@ workflow SORT_READS_BY_REF {
         // 3.3 - merge per taxid fastq parts
         // separate the item which needs to be concatenated
         run_k2r_dump_fastqs_and_pre_report.out.fq_files // meta, taxid_fastqs_list
-            | branch { meta, taxid_fastqs_list ->
+            | branch { meta, _taxid_fastqs_list ->
                 do_concatenate: meta.splitted == true
                 not_concatenate: meta.splitted == false
             }
@@ -176,7 +175,7 @@ workflow SORT_READS_BY_REF {
         // prepare channel to be emitted
 
         per_taxid_fqs_Ch 
-            | map {meta, reads ->
+            | map {_meta, reads ->
                 // group pairs of fastqs based on file names, and add new info to meta
                 reads
                     .groupBy { filePath -> filePath.getName().tokenize("_")[0..-2].join(".")}
@@ -188,17 +187,17 @@ workflow SORT_READS_BY_REF {
             | collate(3) // tuple (id.taxid, fq_1, fq_2)
             | map { it ->
                 // rebuild meta and reads structure
-                meta = [sample_id:it[0].tokenize(".")[0..-2].join("_"), //run.lane.sample_info
+                def meta = [sample_id:it[0].tokenize(".")[0..-2].join("_"), //run.lane.sample_info
                         taxid:it[0].tokenize(".")[-1]] //taxid
                 meta.id = "${meta.sample_id}.${meta.taxid}"
-                reads = [it[1], it[2]]
+                def reads = [it[1], it[2]]
                 tuple(meta, reads)
             }
             | set {pre_sample_taxid_ch}
 
         // 5 - get references files
         pre_sample_taxid_ch
-            .map{meta, reads -> tuple(meta.taxid)}
+            .map{meta, _reads -> tuple(meta.taxid)}
             .collect()
             .flatten()
             .unique()
@@ -214,7 +213,7 @@ workflow SORT_READS_BY_REF {
                 tuple(meta.taxid, meta, reads)
             }
             | combine(taxid_ref_files_map_ch, by:0) // [taxid, meta, reads, ref_files]
-            | map {taxid, meta, reads, ref_files ->
+            | map {_taxid, meta, reads, ref_files ->
                 meta.ref_files = ref_files
                 tuple(meta, reads)
             }
@@ -254,7 +253,7 @@ def check_sort_reads_params(){
     }
     // if yes, is it a file which exists?
     if (params.manifest){
-        manifest_file = file(params.manifest)
+        def manifest_file = file(params.manifest)
         if (!manifest_file.exists()){
             log.error("The manifest provided (${params.manifest}) does not exist.")
             errors += 1

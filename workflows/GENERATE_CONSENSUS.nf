@@ -67,7 +67,7 @@ workflow GENERATE_CONSENSUS {
         // add mpileup output file to meta
         run_ivar.out // tuple (meta, fasta_file, mpileup_file)
             | map {meta, fasta_file, mpileup_file, stdout -> 
-                mut_tokens_lst = stdout.tokenize("---")[-1].tokenize("\n")
+                def mut_tokens_lst = stdout.tokenize("---")[-1].tokenize("\n")
 
                 meta.total_mutations = mut_tokens_lst[1].tokenize(":")[-1]
                 meta.n_insertions = mut_tokens_lst[2].tokenize(":")[-1]
@@ -95,17 +95,17 @@ workflow GENERATE_CONSENSUS {
 def parse_consensus_mnf_meta(consensus_mnf) {
     // consensus_mnf <Channel.fromPath()>
     def mnf_ch =  Channel.fromPath(consensus_mnf)
-                        | splitCsv(header: true, sep: ',')
-                        | map {row -> 
+                        .splitCsv(header: true, sep: ',')
+                        .map {row -> 
                             // set meta
-                            meta = [sample_id: row.sample_id,
+                            def meta = [sample_id: row.sample_id,
                                     taxid: row.taxid,
                                     ref_files: row.ref_files.split(";").collect()]
 
                             meta.id = "${row.sample_id}.${row.taxid}"
 
                             // set files
-                            reads = [row.reads_1, row.reads_2]
+                            def reads = [row.reads_1, row.reads_2]
 
                             // declare channel shape
                             tuple(meta, reads)
