@@ -2,7 +2,8 @@
 
 All notable changes to this project will be documented in this file.
 
-## [UNRELEASED]
+## [1.1.0]
+
 - **[added]**: add report output with non-valid sequences
 - **[removed]**: remove entry points
 - **[removed]**: `PREPROCESSING` workflow removed
