@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.1.0]
+
+- **[added]**: add report output with non-valid sequences
+- **[removed]**: remove entry points
+- **[removed]**: `PREPROCESSING` workflow removed
+- **[fix]**: tests don't use `sanger_standard` profile by default
+- **[added]**: reimplement ivar variants and add mutation statistics
+- **[added]**: `min_coverage_percent` parameter added
+
 ## [1.0]
 
 - **[fix]**: Fix unknown config attribute `CONTAINER_DIR` for tests

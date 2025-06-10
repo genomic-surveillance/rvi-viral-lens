@@ -56,17 +56,27 @@ workflow GENERATE_CONSENSUS {
         // set ivar input channel
         bams_ch
             | map {meta, bams ->
-                // store bam file on meta (check TODO) 
+                // store bam file on meta (check TODO)
                 meta.bam_file = bams[0]
-                tuple(meta, bams)}
-            | set {ivar_in_ch}
+                tuple(meta, bams, meta.ref_files[0])}
+            | set {ivar_in_ch} // tuple (meta, bam, ref_fasta)
 
         // generate consensus using ivar
         run_ivar(ivar_in_ch)
 
         // add mpileup output file to meta
         run_ivar.out // tuple (meta, fasta_file, mpileup_file)
-            | map {meta, fasta_file, mpileup_file -> 
+            | map {meta, fasta_file, mpileup_file, stdout -> 
+                def mut_tokens_lst = stdout.tokenize("---")[-1].tokenize("\n")
+
+                meta.total_mutations = mut_tokens_lst[1].tokenize(":")[-1]
+                meta.n_insertions = mut_tokens_lst[2].tokenize(":")[-1]
+                meta.n_deletions = mut_tokens_lst[3].tokenize(":")[-1]
+                meta.n_snps = mut_tokens_lst[4].tokenize(":")[-1]
+                meta.n_ti = mut_tokens_lst[5].tokenize(":")[-1]
+                meta.n_tv = mut_tokens_lst[6].tokenize(":")[-1]
+                meta.ti_tv_ratio = mut_tokens_lst[7].tokenize(":")[-1]
+
                 meta.mpileup_file = mpileup_file
                 tuple(meta, fasta_file)}
             | set {out_ch}
@@ -85,17 +95,17 @@ workflow GENERATE_CONSENSUS {
 def parse_consensus_mnf_meta(consensus_mnf) {
     // consensus_mnf <Channel.fromPath()>
     def mnf_ch =  Channel.fromPath(consensus_mnf)
-                        | splitCsv(header: true, sep: ',')
-                        | map {row -> 
+                        .splitCsv(header: true, sep: ',')
+                        .map {row -> 
                             // set meta
-                            meta = [sample_id: row.sample_id,
+                            def meta = [sample_id: row.sample_id,
                                     taxid: row.taxid,
                                     ref_files: row.ref_files.split(";").collect()]
 
                             meta.id = "${row.sample_id}.${row.taxid}"
 
                             // set files
-                            reads = [row.reads_1, row.reads_2]
+                            def reads = [row.reads_1, row.reads_2]
 
                             // declare channel shape
                             tuple(meta, reads)

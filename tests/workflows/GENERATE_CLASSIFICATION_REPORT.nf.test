@@ -9,30 +9,66 @@ nextflow_workflow {
 
         when {
             params {
-                meta = [
+                outdir = "$launchDir/results/"
+                meta =
+                    [
                     sample_id:"test",
                     taxid:"2222222",
                     virus_name:"SARSCov2",
                     virus_subtype:"BA.2",
                     flu_segment:"",
-                    percentage_genome_coverage:"90",
+                    percentage_genome_coverage:"90.0",
                     ref_selected:"Severe acute respiratory syndrome coronavirus 2",
                     total_mapped_reads:"200",
                     longest_no_N_segment:"10",
-                    percentage_of_N_bases:"0.5"
+                    percentage_of_N_bases:"0.5",
+                    total_mutations:"1",
+                    n_insertions:"0",
+                    n_deletions:"0",
+                    n_snps:"1",
+                    ti_tv_ratio:"null"
                 ]
+
+                meta_random =
+                    [
+                    sample_id:"artifact",
+                    taxid:"333333",
+                    virus_name:"Random",
+                    virus_subtype:"",
+                    flu_segment:"",
+                    percentage_genome_coverage:"5.0",
+                    ref_selected:"random virus",
+                    total_mapped_reads:"5",
+                    longest_no_N_segment:"9",
+                    percentage_of_N_bases:"0.95"
+                    ]
+
+                min_coverage_percent = 10
+
             }
             workflow {
                 """
                 // define inputs of the workflow here. Example:
-                input[0] = Channel.of(tuple([params.meta]))
+                input[0] = Channel.of(tuple(params.meta), tuple(params.meta_random))
                 """
             }
         }
 
         then {
             assert workflow.success
-	    assert snapshot(workflow.out).match()
+            assert file("${params.outdir}/classification_report.csv").exists()
+            assert file("${params.outdir}/classification_report_invalid.csv").exists()
+            assert file("${params.outdir}/classification_report.csv").size() > 0
+            assert file("${params.outdir}/classification_report_invalid.csv").size() > 0
+            assert file("${params.outdir}/classification_report.csv").text.contains("test")
+            assert file("${params.outdir}/classification_report_invalid.csv").text.contains("artifact")
+            assert file("${params.outdir}/classification_report.csv").text.contains("SARSCov2")
+            assert file("${params.outdir}/classification_report_invalid.csv").text.contains("Random")
+            assert file("${params.outdir}/classification_report.csv").text.contains("BA.2")
+            assert file("${params.outdir}/classification_report.csv").text.contains("90.0")
+            assert file("${params.outdir}/classification_report_invalid.csv").text.contains("5.0")
+            assert snapshot(workflow.out).match()
+        
         }
 
     }

@@ -28,8 +28,6 @@ process run_pangolin {
 
     * ---------------------------------------------------------------
     */
-
-    publishDir "${params.outdir}/${meta.sample_id}/${meta.taxid}/", mode: "copy", pattern: "*.csv"
     label "pangolin"
     tag "${meta.id}"
 

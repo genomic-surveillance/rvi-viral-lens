@@ -5,8 +5,9 @@
 nextflow.enable.dsl = 2
 
 // --- import modules ---------------------------------------------------------
-include {check_generate_consensus_params; parse_consensus_mnf_meta} from './workflows/GENERATE_CONSENSUS.nf'
+include {check_generate_consensus_params} from './workflows/GENERATE_CONSENSUS.nf'
 include {check_sort_reads_params} from './workflows/SORT_READS_BY_REF.nf'
+include {check_classification_report_params} from './workflows/GENERATE_CLASSIFICATION_REPORT.nf'
 include { validateParameters; paramsSummaryLog} from 'plugin/nf-schema'
 
 include {SORT_READS_BY_REF} from './workflows/SORT_READS_BY_REF.nf'
@@ -14,47 +15,46 @@ include {GENERATE_CONSENSUS} from './workflows/GENERATE_CONSENSUS.nf'
 include {SCOV2_SUBTYPING} from './workflows/SCOV2_SUBTYPING.nf'
 include {COMPUTE_QC_METRICS} from './workflows/COMPUTE_QC_METRICS.nf'
 include {GENERATE_CLASSIFICATION_REPORT} from './workflows/GENERATE_CLASSIFICATION_REPORT.nf'
-include {PREPROCESSING} from './rvi_toolbox/subworkflows/PREPROCESSING.nf'
 
 
-/*
-* ANSI escape codes to color output messages
-*/
-ANSI_GREEN = "\033[1;32m"
-ANSI_RED = "\033[1;31m"
-ANSI_RESET = "\033[0m"
-ANSI_BOLD = "\033[1m"
 
-log.info """${ANSI_RESET}
+// Main entry-point workflow
+workflow {
+
+  /*
+  * ANSI escape codes to color output messages
+  */
+  ANSI_GREEN = "\033[1;32m"
+  _ANSI_RED = "\033[1;31m"
+  ANSI_RESET = "\033[0m"
+  _ANSI_BOLD = "\033[1m"
+
+
+  log.info """${ANSI_RESET}
   ===========================================
-  Viral Lens [v1.0]
+  Viral Lens [v1.1.0]
   Used parameters:
   -------------------------------------------
   --> general pipeline parameters:
     --use_local_containers     : ${params.use_local_containers}
     --use_registry_containers  : ${params.use_registry_containers}
-    --entry_point              : ${params.entry_point}
     --containers_dir           : ${params.containers_dir}
     --outdir                   : ${params.outdir}
-    --run_preprocessing         : ${params.run_preprocessing}
-
-  --> PREPROCESSING workflow parameters:
-    --run_trimmomatic          : ${params.run_trimmomatic}
-    --run_trf                  : ${params.run_trf}
-    --run_hrr                  : ${params.run_hrr}
 
   --> SORT_READS_BY_REF workflow parameters:
     --manifest                   : ${params.manifest}
     --db_path                    : ${params.db_path}
     --db_library_fa_path         : ${params.db_library_fa_path}
     --min_reads_for_taxid        : ${params.min_reads_for_taxid}
-    --k2r_max_total_reads_per_fq : ${params.max_total_reads_per_fq}
+    --k2r_max_total_reads_per_fq : ${params.k2r_max_total_reads_per_fq}
     --k2r_dump_fq_mem            : ${params.k2r_dump_fq_mem}
 
   --> GENERATE_CONSENSUS workflow parameters:
-    --consensus_mnf            : ${params.consensus_mnf}
     --ivar_min_depth           : ${params.ivar_min_depth}
     --ivar_freq_threshold      : ${params.ivar_freq_threshold}
+
+  --> GENERATE_CLASSIFICATION_REPORT workflow parameters:
+    --min_coverage_percent     : ${params.min_coverage_percent}
 
   --> viral subtyping branching parameters:
     --scv2_keyword             : ${params.scv2_keyword}
@@ -78,47 +78,29 @@ log.info """${ANSI_RESET}
   ------------------------------------------
 """.stripIndent()
 
-// Validate input parameters
-validateParameters()
-// Print summary of supplied parameters
-log.info paramsSummaryLog(workflow)
+  // Validate input parameters
+  validateParameters()
+  // Print summary of supplied parameters
+  log.info paramsSummaryLog(workflow)
 
-// Main entry-point workflow
-workflow {
 
     // === 1 - Process input ===
     check_main_params()
     // ==========================
     reads_ch = parse_mnf(params.manifest)
 
-    // === 1 - PREPROCESSING ===
-    if (params.run_preprocessing){
-      PREPROCESSING(reads_ch)
-      reads_ch = PREPROCESSING.out
-    }
     // ==========================
     // === 2 - Map reads to taxid
-    if (params.entry_point == "sort_reads"){
-        // check if 
-        SORT_READS_BY_REF(reads_ch)
-        sample_taxid_ch = SORT_READS_BY_REF.out.sample_taxid_ch // tuple (meta, reads)
-        sample_pre_report_ch = SORT_READS_BY_REF.out.sample_pre_report_ch
-    }
+    SORT_READS_BY_REF(reads_ch)
+    sample_taxid_ch = SORT_READS_BY_REF.out.sample_taxid_ch // tuple (meta, reads)
+    sample_pre_report_ch = SORT_READS_BY_REF.out.sample_pre_report_ch
 
     // === 3 - Generate consensus ==
-    if (params.entry_point == "consensus_gen"){
-        // process manifest
-        sample_taxid_ch = parse_consensus_mnf_meta(params.consensus_mnf)
-        // TODO we need to add pre_report
-    }
-
     GENERATE_CONSENSUS(sample_taxid_ch)
 
     // === 4 - Compute QC Metrics
-    
     COMPUTE_QC_METRICS(GENERATE_CONSENSUS.out)
-    
-    
+
     // === 5 - branching output from QC for viral specific subtyping
 
     // 5.1 - process pre_report files
@@ -129,7 +111,7 @@ workflow {
       .filter{it -> (it.size() > 1)} // remove empty pre_reports
       .splitCsv(header: true, sep:"\t")
       .map{it -> 
-        id="${it.sample_id}.${it.selected_taxid}"
+        def id="${it.sample_id}.${it.selected_taxid}"
         tuple(id, it)
       }
       .set{sample_report_ch}
@@ -137,13 +119,13 @@ workflow {
     // raise warning for sample taxids which had empty pre_reports
     sample_pre_report_ch
       .filter{it -> (it.size() <= 1)}
-      .view(it -> log.warn("Excluding ${it} as input due to small size ( < 1 byte)"))
+      .view{it -> log.warn("Excluding ${it} as input due to small size ( < 1 byte)")}
 
     // 5.2 - add report info to out qc metric chanel and branch for SCOV2 subtyping
     COMPUTE_QC_METRICS.out // tuple (meta, bam)
       .map { meta, bam -> tuple(meta.id, meta, bam)}
       .join(sample_report_ch)//, by: 0) // tuple (id, meta, bam, report)
-      .map {id, meta, bam, report ->
+      .map {_id, meta, bam, report ->
         meta.putAll(report)
         tuple(meta, bam)
       }
@@ -171,14 +153,13 @@ workflow {
     .set{report_in_ch}
 
   GENERATE_CLASSIFICATION_REPORT(report_in_ch)
-
 }
 
 def __check_if_params_file_exist(param_name, param_value){
   def error = 0
 
   if (!(param_value==null)){
-    param_file = file(param_value)
+    def param_file = file(param_value)
     if (!param_file.exists()){
       log.error("${param_file} does not exist")
       error +=1
@@ -195,23 +176,10 @@ def __check_if_params_file_exist(param_name, param_value){
 def check_main_params(){
 
     def errors = 0
-    def valid_entry_points = ["sort_reads", "consensus_gen"]
-    
-    // check if execution mode is valid
-    if (!valid_entry_points.contains(params.entry_point)){
-        log.error("The execution mode provided (${params.entry_point}) is not valid. valid modes = ${valid_entry_points}")
-        errors += 1
-    }
 
-    if (params.entry_point == "sort_reads"){
-        errors += check_sort_reads_params()
-    }
+    errors += check_sort_reads_params()
 
-    if (params.entry_point=="consensus_gen"){
-        // check if manifest was provided
-        errors += __check_if_params_file_exist("consensus_mnf", params.consensus_mnf)
-    }
-
+    errors += check_classification_report_params()
     if (errors > 0) {
         log.error("Parameter errors were found, the pipeline will not run.")
         exit 1
@@ -223,7 +191,13 @@ def check_main_params(){
  */
 workflow.onComplete {
   // Log colors ANSI codes
-  
+  /*
+  * ANSI escape codes to color output messages
+  */
+  def ANSI_GREEN = "\033[1;32m"
+  def ANSI_RED = "\033[1;31m"
+  def ANSI_RESET = "\033[0m"
+ 
   println """
   Pipeline execution summary
   ---------------------------
@@ -237,7 +211,7 @@ workflow.onComplete {
   """.stripIndent()
 }
 
-def parse_mnf(consensus_mnf) {
+def parse_mnf(mnf) {
     /*
     -----------------------------------------------------------------
     Parses the manifest file to create a channel of metadata and 
@@ -250,7 +224,7 @@ def parse_mnf(consensus_mnf) {
     -----------------------------------------------------------------
 
     - **Input**:
-        consensus_mnf (path to the manifest file)
+        mnf (path to the manifest file)
 
     - **Output**: 
         Channel with tuples of metadata and FASTQ file pairs.
@@ -258,14 +232,13 @@ def parse_mnf(consensus_mnf) {
     -----------------------------------------------------------------
     */
     // Read manifest file into a list of rows
-    def mnf_rows = Channel.fromPath(consensus_mnf)
-                          | splitCsv(header: true, sep: ',')
+    def mnf_rows = Channel.fromPath(mnf).splitCsv(header: true, sep: ',')
 
     // Collect sample IDs and validate
     def sample_ids = []
     def errors = 0
     
-    def errors_ch = mnf_rows.map { row ->
+    def _errors_ch = mnf_rows.map { row ->
         def sample_id = row.sample_id
 
         // Check if sample_id is empty
@@ -292,7 +265,7 @@ def parse_mnf(consensus_mnf) {
         // be sure that the number of errors is evaluated after all rows are processed
         .collect() 
         // kill the pipeline if errors are found
-        .subscribe{ v ->
+        .subscribe{ _v ->
         if (errors > 0) {
             log.error("${errors} critical errors in the manifest were detected. Please check README for more details.")
             exit 1
@@ -302,7 +275,14 @@ def parse_mnf(consensus_mnf) {
     // If validation passed, create the channel as before
     def mnf_ch = mnf_rows.map { row -> 
                     // set meta
-                    def meta = [id: row.sample_id]
+                    def meta = [
+                      // id is internal to the pipeline and taxid 
+                      // is added to it latter
+                      id: row.sample_id,
+                      // sample_id is explictily used on the 
+                      // publishing of files paths
+                      sample_id: row.sample_id
+                    ]
                     // set files
                     def reads = [row.reads_1, row.reads_2]
                     // declare channel shape

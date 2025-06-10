@@ -41,10 +41,6 @@
       "type": "boolean",
       "default": true
     },
-    "entry_point": {
-      "type": "string",
-      "default": "sort_reads"
-    },
     "manifest": {
       "type": "string"
     },
