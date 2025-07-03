@@ -49,7 +49,7 @@ workflow COMPUTE_QC_METRICS {
             | map {meta, fasta_file ->
                 // store fasta_files at meta
                 def new_meta = meta.plus([consensus_fa: fasta_file])
-                tuple(new_meta, meta.bam_file, fasta_file, meta.ref_files[0], meta.mpileup_file)
+                tuple(new_meta, new_meta.bam_file, fasta_file, new_meta.ref_files[0], new_meta.mpileup_file)
             }
             | set{qc_script_In_ch}
 
@@ -70,7 +70,7 @@ workflow COMPUTE_QC_METRICS {
                     total_mapped_reads: tokens_lst[8] // Number of reads that mapped successfully.
                 ])
 
-                tuple(new_meta, meta.bam_file)
+                tuple(new_meta, new_meta.bam_file)
             }
             | set {qc_Out_ch}
     emit:
