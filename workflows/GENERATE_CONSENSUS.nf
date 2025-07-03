@@ -79,7 +79,6 @@ workflow GENERATE_CONSENSUS {
                     ti_tv_ratio: mut_tokens_lst[7].tokenize(":")[-1],
                     mpileup_file: mpileup_file
                 ])
-
                 tuple(new_meta, fasta_file)}
             | set {out_ch}
 

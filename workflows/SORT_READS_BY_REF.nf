@@ -123,12 +123,12 @@ workflow SORT_READS_BY_REF {
 
                 // branch channels
                 needs_fq_spliting: _new_meta.class_fq_n_reads > params.k2r_max_total_reads_per_fq
-                    _new_meta.splitted = true
-                    return tuple(_new_meta, _new_meta.classified_fq_filepair[0], _new_meta.classified_fq_filepair[1])
+                    def new_meta_2 = _new_meta.plus([splitted: true])
+                    return tuple(new_meta_2, new_meta_2.classified_fq_filepair[0], new_meta_2.classified_fq_filepair[1])
 
                 no_fq_spliting: _new_meta.class_fq_n_reads <= params.k2r_max_total_reads_per_fq
-                    _new_meta.splitted = false
-                    return tuple(_new_meta, _new_meta.classified_fq_filepair, _new_meta.tax_to_reads_json, _new_meta.decomposed_json, _new_meta.kraken_report)
+                    def new_meta_2 = _new_meta.plus([splitted: false])
+                    return tuple(new_meta_2, new_meta_2.classified_fq_filepair, new_meta_2.tax_to_reads_json, new_meta_2.decomposed_json, new_meta_2.kraken_report)
             }
             | set {k2r_sorted_read_Out_ch}
 
