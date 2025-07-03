@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
+## [UNRELEASED]
+
+- **[fix]**: remove singularity cachedir pointing to container_dir
+- **[fix]**: change default queue from "long" to "normal"
+
 ## [1.1.0]
 
 - **[added]**: add report output with non-valid sequences
