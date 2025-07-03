@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
+## [UNRELESED]
+
+- **[fix]**: refactor workflows to do not do meta inplace changes
+
+
 ## [1.1.0]
 
 - **[added]**: add report output with non-valid sequences
