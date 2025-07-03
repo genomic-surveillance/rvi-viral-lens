@@ -197,7 +197,7 @@ workflow SORT_READS_BY_REF {
                         taxid:it[0].tokenize(".")[-1]] //taxid
                 meta.id = "${meta.sample_id}.${meta.taxid}"
                 def reads = [it[1], it[2]]
-                tuple(meta, reads)
+                tuple(meta, reads) // new meta object created for taxid FASTQ pair - tuple(meta, [fq_1, fq_2])
             }
             | set {pre_sample_taxid_ch}
 
