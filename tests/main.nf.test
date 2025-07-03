@@ -50,7 +50,9 @@ nextflow_pipeline {
         then {
             assert workflow.failed
             assert workflow.exitStatus == 1
-            assert workflow.stdout.contains('ERROR ~ For input string: "notAFloat"')
+            assert workflow.stdout.contains('ERROR ~ Validation of pipeline parameters failed!')
+            assert workflow.stderr.contains('* --min_coverage_percent (notAFloat): Value is [string] but should be [integer]')
+
 
         }
     }
