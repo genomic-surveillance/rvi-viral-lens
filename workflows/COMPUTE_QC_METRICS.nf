@@ -48,8 +48,8 @@ workflow COMPUTE_QC_METRICS {
         qc_metrics_In_ch
             | map {meta, fasta_file ->
                 // store fasta_files at meta
-                meta.consensus_fa = fasta_file
-                tuple(meta, meta.bam_file, fasta_file, meta.ref_files[0], meta.mpileup_file)
+                def new_meta = meta.plus([consensus_fa: fasta_file])
+                tuple(new_meta, meta.bam_file, fasta_file, meta.ref_files[0], meta.mpileup_file)
             }
             | set{qc_script_In_ch}
 
@@ -60,14 +60,17 @@ workflow COMPUTE_QC_METRICS {
         run_qc_script.out
             | map {meta, qc_csv, stdout_str -> 
                 def tokens_lst = stdout_str.tokenize(",")
-                meta.percentage_of_N_bases = tokens_lst[1] // Proportion of ambiguous bases in the consensus sequence.
-                meta.percentage_genome_coverage = tokens_lst[2] // Proportion of the genome covered by aligned reads.
-                meta.longest_no_N_segment = tokens_lst[3] // The longest continuous segment without N bases.
-                meta.total_aligned_reads = tokens_lst[4] // Number of reads aligned to the reference.
-                meta.total_unmapped_reads = tokens_lst[10].replace("\n","") // Number of reads that did not align.
-                meta.total_mapped_reads = tokens_lst[8] // Number of reads that mapped successfully.
+                // create a new meta with QC metrics
+                def new_meta = meta.plus([
+                    percentage_of_N_bases: tokens_lst[1], // Proportion of ambiguous bases in the consensus sequence.
+                    percentage_genome_coverage: tokens_lst[2], // Proportion of the genome covered by aligned reads.
+                    longest_no_N_segment: tokens_lst[3], // The longest continuous segment without N bases.
+                    total_aligned_reads: tokens_lst[4], // Number of reads aligned to the reference.
+                    total_unmapped_reads: tokens_lst[10].replace("\n",""), // Number of reads that did not align.
+                    total_mapped_reads: tokens_lst[8] // Number of reads that mapped successfully.
+                ])
 
-                tuple(meta, meta.bam_file)
+                tuple(new_meta, meta.bam_file)
             }
             | set {qc_Out_ch}
     emit:
