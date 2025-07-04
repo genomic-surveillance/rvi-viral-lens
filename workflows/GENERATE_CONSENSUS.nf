@@ -57,9 +57,9 @@ workflow GENERATE_CONSENSUS {
         bams_ch
             | map {meta, bams ->
                 // store bam file on meta (check TODO)
-                meta.bam_file = bams[0]
-                tuple(meta, bams, meta.ref_files[0])}
-            | set {ivar_in_ch} // tuple (meta, bam, ref_fasta)
+                def new_meta = meta.plus([bam_file : bams[0]])
+                tuple(new_meta, bams, new_meta.ref_files[0])}
+            | set {ivar_in_ch} // tuple (new_meta, bam, ref_fasta)
 
         // generate consensus using ivar
         run_ivar(ivar_in_ch)
@@ -68,17 +68,18 @@ workflow GENERATE_CONSENSUS {
         run_ivar.out // tuple (meta, fasta_file, mpileup_file)
             | map {meta, fasta_file, mpileup_file, stdout -> 
                 def mut_tokens_lst = stdout.tokenize("---")[-1].tokenize("\n")
-
-                meta.total_mutations = mut_tokens_lst[1].tokenize(":")[-1]
-                meta.n_insertions = mut_tokens_lst[2].tokenize(":")[-1]
-                meta.n_deletions = mut_tokens_lst[3].tokenize(":")[-1]
-                meta.n_snps = mut_tokens_lst[4].tokenize(":")[-1]
-                meta.n_ti = mut_tokens_lst[5].tokenize(":")[-1]
-                meta.n_tv = mut_tokens_lst[6].tokenize(":")[-1]
-                meta.ti_tv_ratio = mut_tokens_lst[7].tokenize(":")[-1]
-
-                meta.mpileup_file = mpileup_file
-                tuple(meta, fasta_file)}
+                // set meta with mutation information
+                def new_meta = meta.plus([
+                    total_mutations: mut_tokens_lst[1].tokenize(":")[-1],
+                    n_insertions: mut_tokens_lst[2].tokenize(":")[-1],
+                    n_deletions: mut_tokens_lst[3].tokenize(":")[-1],
+                    n_snps: mut_tokens_lst[4].tokenize(":")[-1],
+                    n_ti: mut_tokens_lst[5].tokenize(":")[-1],
+                    n_tv: mut_tokens_lst[6].tokenize(":")[-1],
+                    ti_tv_ratio: mut_tokens_lst[7].tokenize(":")[-1],
+                    mpileup_file: mpileup_file
+                ])
+                tuple(new_meta, fasta_file)}
             | set {out_ch}
 
     emit:
