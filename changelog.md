@@ -3,7 +3,7 @@
 All notable changes to this project will be documented in this file.
 
 
-## [1.1.2]
+## [1.2.0]
 
 - **[fix]**: remove singularity cachedir pointing to container_dir
 - **[fix]**: change default queue from "long" to "normal"
