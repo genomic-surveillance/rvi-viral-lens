@@ -64,8 +64,9 @@ workflow SCOV2_SUBTYPING {
         run_pangolin(consensus_seq_ch)
         run_pangolin.out
             .map { meta, consensus_seq, lineage -> 
-                meta.virus_subtype = lineage
-                tuple(meta)
+                // create a new meta with lineage information
+                def new_meta = meta.plus(virus_subtype: lineage)
+                tuple(new_meta)
             }
             .set {scov2_subtype_out_ch}
 
