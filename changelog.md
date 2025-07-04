@@ -6,6 +6,7 @@ All notable changes to this project will be documented in this file.
 
 - **[fix]**: remove singularity cachedir pointing to container_dir
 - **[fix]**: change default queue from "long" to "normal"
+- **[fix]**: refactor workflows to no longer modify meta object in-place; adding safety to the workflows
 
 ## [1.1.0]
 

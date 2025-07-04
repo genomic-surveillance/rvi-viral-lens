@@ -84,16 +84,19 @@ workflow SORT_READS_BY_REF {
             | map {it -> tuple(it[0], it[1], it[2], it[4])} // tuple (meta, kraken_output, [classified_fq_filepair], kraken_report)
             | map {meta, kraken_output, classified_fq_filepair, kraken_report -> //tuple(meta, kraken_output,classified_fq_filepair,kraken_report) 
 
-                // store kraken2 outputs on meta to simplify channel gymnastics
-                meta.kraken_output = kraken_output
-                meta.kraken_report = kraken_report
-                meta.classified_fq_filepair = classified_fq_filepair
-
                 // get input file sizes to estimate resources usage (cpu and mem) 
                 def fq_1_size = classified_fq_filepair[0].size() // byte
                 def fq_2_size = classified_fq_filepair[1].size() // byte
-                meta.fqs_total_size = fq_1_size + fq_2_size
-                return tuple (meta, kraken_output, kraken_report)
+                def _new_meta = meta.plus([
+                    classified_fq_filepair: classified_fq_filepair, // store classified fq filepair on meta
+                    // store kraken2 outputs on meta to simplify channel gymnastics
+                    kraken_report: kraken_report,
+                    kraken_output: kraken_output,
+                    fqs_total_size: fq_1_size + fq_2_size, // store total size of fq files on meta
+                ])
+                
+                //_new_meta.fqs_total_size = fq_1_size + fq_2_size
+                return tuple (_new_meta, kraken_output, kraken_report)
             }
             | set {sort_reads_in_ch}
 
@@ -105,24 +108,27 @@ workflow SORT_READS_BY_REF {
         run_k2r_sort_reads.out.json_files // meta, tax_to_reads_json, decomposed_json
             | branch {meta, tax_to_reads_json, decomposed_json -> 
                 // store json files on meta
-                meta.tax_to_reads_json = tax_to_reads_json
-                meta.decomposed_json = decomposed_json
-
                 // count reads
                 def fq_1_n_reads = meta.classified_fq_filepair[0].countFastq()
                 def fq_2_n_reads = meta.classified_fq_filepair[1].countFastq()
 
                 assert(fq_1_n_reads == fq_2_n_reads)
-                meta.class_fq_n_reads = fq_1_n_reads
-                
-                // branch channels
-                needs_fq_spliting: meta.class_fq_n_reads > params.k2r_max_total_reads_per_fq
-                    meta.splitted = true
-                    return tuple (meta, meta.classified_fq_filepair[0], meta.classified_fq_filepair[1])
 
-                no_fq_spliting: meta.class_fq_n_reads <= params.k2r_max_total_reads_per_fq
-                    meta.splitted = false
-                    return tuple(meta, meta.classified_fq_filepair, meta.tax_to_reads_json, meta.decomposed_json, meta.kraken_report)
+                def _new_meta = meta.plus([
+                        // store kraken2 outputs on meta to simplify channel gymnastics
+                        tax_to_reads_json: tax_to_reads_json, 
+                        decomposed_json: decomposed_json,
+                        class_fq_n_reads: fq_1_n_reads // store number of reads on meta
+                        ])
+
+                // branch channels
+                needs_fq_spliting: _new_meta.class_fq_n_reads > params.k2r_max_total_reads_per_fq
+                    def new_meta_2 = _new_meta.plus([splitted: true])
+                    return tuple(new_meta_2, new_meta_2.classified_fq_filepair[0], new_meta_2.classified_fq_filepair[1])
+
+                no_fq_spliting: _new_meta.class_fq_n_reads <= params.k2r_max_total_reads_per_fq
+                    def new_meta_2 = _new_meta.plus([splitted: false])
+                    return tuple(new_meta_2, new_meta_2.classified_fq_filepair, new_meta_2.tax_to_reads_json, new_meta_2.decomposed_json, new_meta_2.kraken_report)
             }
             | set {k2r_sorted_read_Out_ch}
 
@@ -191,7 +197,7 @@ workflow SORT_READS_BY_REF {
                         taxid:it[0].tokenize(".")[-1]] //taxid
                 meta.id = "${meta.sample_id}.${meta.taxid}"
                 def reads = [it[1], it[2]]
-                tuple(meta, reads)
+                tuple(meta, reads) // new meta object created for taxid FASTQ pair - tuple(meta, [fq_1, fq_2])
             }
             | set {pre_sample_taxid_ch}
 
@@ -214,8 +220,8 @@ workflow SORT_READS_BY_REF {
             }
             | combine(taxid_ref_files_map_ch, by:0) // [taxid, meta, reads, ref_files]
             | map {_taxid, meta, reads, ref_files ->
-                meta.ref_files = ref_files
-                tuple(meta, reads)
+                def new_meta = meta.plus([ref_files: ref_files]) // add reference files to meta
+                tuple(new_meta, reads)
             }
             | set {sample_taxid_ch}
     
