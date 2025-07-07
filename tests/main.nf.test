@@ -156,12 +156,78 @@ nextflow_pipeline {
             params {
                 db_path="${projectDir}/tests/test_data/test_kraken_databases/minimal"
                 manifest="${projectDir}/tests/test_data/test_manifests/test_input_manifest_located.csv"
+                kraken2_cpus = 1
+                developer_publish = true
             }
         }
 
         then {
             assert workflow.success
+
+            // check if output files are as expected
+            def sample_id_A = "FluH1N1_SARSCoV2_hPIV1_33K_ea_P1"
+            def dir_A = "${launchDir}/results/${sample_id_A}/"
+            assert file("${dir_A}/2697049/${sample_id_A}.2697049.consensus.fa").exists()
+            assert file("${dir_A}/2697049/${sample_id_A}.2697049.sorted.bam").exists()
+            assert file("${dir_A}/2697049/${sample_id_A}.2697049.sorted.bam.bai").exists()
+
+
+            assert file("${dir_A}/9000016/${sample_id_A}.9000016.consensus.fa").exists()
+            assert file("${dir_A}/9000016/${sample_id_A}.9000016.sorted.bam").exists()
+            assert file("${dir_A}/9000016/${sample_id_A}.9000016.sorted.bam.bai").exists()
+
+            def sample_id_B = "Zeptometrix_Panel_2_1_Control1_P1"
+            def dir_B = "${launchDir}/results/${sample_id_B}/"
+
+            assert file("${dir_B}/9000016/${sample_id_B}.9000016.consensus.fa").exists()
+            assert file("${dir_B}/9000016/${sample_id_B}.9000016.sorted.bam").exists()
+            assert file("${dir_B}/9000016/${sample_id_B}.9000016.sorted.bam.bai").exists()
+
+            // check developer publish outputs
+            // expected on the sample_id dir
+            // qc.csv
+            assert file("${dir_A}/2697049/${sample_id_A}.2697049.qc.csv").exists()
+            assert file("${dir_A}/9000016/${sample_id_A}.9000016.qc.csv").exists()
+            assert file("${dir_B}/9000016/${sample_id_B}.9000016.qc.csv").exists()
+
+            // json
+            assert file("${dir_A}/${sample_id_A}_decomposed.json")
+            assert file("${dir_A}/${sample_id_A}_tax_to_reads.json")
+
+            assert file("${dir_B}/${sample_id_B}_decomposed.json")
+            assert file("${dir_B}/${sample_id_B}_tax_to_reads.json")
+
+            // class_seqs.fq
+            assert file("${dir_A}/${sample_id_A}.class_seqs_1.fq")
+            assert file("${dir_A}/${sample_id_A}.class_seqs_2.fq")
+
+            assert file("${dir_B}/${sample_id_B}.class_seqs_1.fq")
+            assert file("${dir_B}/${sample_id_B}.class_seqs_2.fq")
+
+            // kraken output and report
+            assert file("${dir_A}/${sample_id_A}.kraken.output")
+            assert file("${dir_A}/${sample_id_A}.report.txt")
+            
+            assert file("${dir_B}/${sample_id_B}.kraken.output")
+            assert file("${dir_B}/${sample_id_B}.report.txt")
+
+            // unclassified.fq
+            assert file("${dir_A}/${sample_id_A}.unclass_seqs_1.fq")
+            assert file("${dir_A}/${sample_id_A}.unclass_seqs_2.fq")
+
+            assert file("${dir_B}/${sample_id_B}.unclass_seqs_1.fq")
+            assert file("${dir_B}/${sample_id_B}.unclass_seqs_2.fq")
+
+            // reads by taxon
+            assert file("${dir_A}/${sample_id_A}_2697049_R1.fq")
+            assert file("${dir_A}/${sample_id_A}_2697049_R2.fq")
+            assert file("${dir_A}/${sample_id_A}_9000016_R1.fq")
+            assert file("${dir_A}/${sample_id_A}_9000016_R2.fq")
+
+            assert file("${dir_B}/${sample_id_B}_9000016_R1.fq")
+            assert file("${dir_B}/${sample_id_B}_9000016_R2.fq")
         }
+
 
     }
 
