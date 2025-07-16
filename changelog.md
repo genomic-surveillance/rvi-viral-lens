@@ -2,9 +2,9 @@
 
 All notable changes to this project will be documented in this file.
 
-## [UNRELEASED]
+## [1.3.0]
 
-- **[fix]**: fix `developer_publish` 
+- **[fix]**: fix `developer_publish` (did not publish some files previously)
 
 ## [1.2.0]
 
@@ -37,8 +37,8 @@ All notable changes to this project will be documented in this file.
 
 ## [0.4.1]
 
-**[hotfix]**: `outdir` default value set as the same in `nextflow-commons.config`
-**[added]**: `containers_dir` as the default value for singularity `cachedir`
+- **[hotfix]**: `outdir` default value set as the same in `nextflow-commons.config`
+- **[added]**: `containers_dir` as the default value for singularity `cachedir`
 
 ## [0.4.0]
 

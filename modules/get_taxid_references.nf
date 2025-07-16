@@ -37,7 +37,7 @@ process get_taxid_reference_files{
     */
 
     tag "${taxid}"
-
+    label "get_taxid_reference_files"
 
     input:
         val(taxid)
