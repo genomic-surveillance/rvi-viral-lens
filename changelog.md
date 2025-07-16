@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.3.1]
+
+- **[fix]**: additional fix to `developer_publish` sorted reads FASTQ files
+
 ## [1.3.0]
 
 - **[fix]**: fix `developer_publish` (did not publish some files previously)
