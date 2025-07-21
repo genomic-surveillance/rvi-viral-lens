@@ -99,8 +99,9 @@ workflow {
     // === 3 - Generate consensus ==
     GENERATE_CONSENSUS(sample_taxid_ch)
 
-    // === 4 - Generate consensus ==
+    // === 4 - Compute QC metrics ==
     COMPUTE_QC_METRICS(GENERATE_CONSENSUS.out)
+
     // === 5 - branching output from generate_consensus for viral specific subtyping
 
     // 5.1 - process pre_report files
