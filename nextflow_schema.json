@@ -142,9 +142,17 @@
       "type": "string",
       "default": "./results"
     },
-    "min_coverage_percent": {
+    "qc_depth_threshold": {
       "type": "integer",
       "default": 10
+    },
+    "qc_min_percent_positions_exceeding_depth_threshold": {
+        "type": "number",
+        "default": 10.0
+    },
+    "qc_min_percent_non_n": {
+        "type": "number",
+        "default": 50.0
     },
     "developer_publish": {
       "type": "boolean"

@@ -1,5 +1,7 @@
 // Copyright (C) 2023 Genome Surveillance Unit/Genome Research Ltd.
 
+import groovy.json.JsonSlurper
+
 include {bwa_alignment_and_post_processing} from '../modules/bwa_alignment.nf'
 include {run_ivar} from '../modules/run_ivar.nf'
 
@@ -63,55 +65,10 @@ workflow GENERATE_CONSENSUS {
 
         // generate consensus using ivar
         run_ivar(ivar_in_ch)
-
-        // add mpileup output file to meta
-        run_ivar.out // tuple (meta, fasta_file, mpileup_file)
-            | map {meta, fasta_file, mpileup_file, stdout -> 
-                def mut_tokens_lst = stdout.tokenize("---")[-1].tokenize("\n")
-                // set meta with mutation information
-                def new_meta = meta.plus([
-                    total_mutations: mut_tokens_lst[1].tokenize(":")[-1],
-                    n_insertions: mut_tokens_lst[2].tokenize(":")[-1],
-                    n_deletions: mut_tokens_lst[3].tokenize(":")[-1],
-                    n_snps: mut_tokens_lst[4].tokenize(":")[-1],
-                    n_ti: mut_tokens_lst[5].tokenize(":")[-1],
-                    n_tv: mut_tokens_lst[6].tokenize(":")[-1],
-                    ti_tv_ratio: mut_tokens_lst[7].tokenize(":")[-1],
-                    mpileup_file: mpileup_file
-                ])
-                tuple(new_meta, fasta_file)}
-            | set {out_ch}
-
+        
     emit:
-        out_ch // tuple (meta, fasta_file)
+        run_ivar.out // tuple (meta, bams, consensus_fasta_file, variants_file)
 
-//-------------------------------------------------------------------
-// TODO: We should consider output bam files explicitly instead 
-//           of implictily stored on meta.
-//-------------------------------------------------------------------
-}
-
-
-
-def parse_consensus_mnf_meta(consensus_mnf) {
-    // consensus_mnf <Channel.fromPath()>
-    def mnf_ch =  Channel.fromPath(consensus_mnf)
-                        .splitCsv(header: true, sep: ',')
-                        .map {row -> 
-                            // set meta
-                            def meta = [sample_id: row.sample_id,
-                                    taxid: row.taxid,
-                                    ref_files: row.ref_files.split(";").collect()]
-
-                            meta.id = "${row.sample_id}.${row.taxid}"
-
-                            // set files
-                            def reads = [row.reads_1, row.reads_2]
-
-                            // declare channel shape
-                            tuple(meta, reads)
-                        }
-    return mnf_ch // tuple(index, [fastq_pairs])
 }
 
 def check_generate_consensus_params(){

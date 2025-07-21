@@ -12,8 +12,8 @@ include { validateParameters; paramsSummaryLog} from 'plugin/nf-schema'
 
 include {SORT_READS_BY_REF} from './workflows/SORT_READS_BY_REF.nf'
 include {GENERATE_CONSENSUS} from './workflows/GENERATE_CONSENSUS.nf'
-include {SCOV2_SUBTYPING} from './workflows/SCOV2_SUBTYPING.nf'
 include {COMPUTE_QC_METRICS} from './workflows/COMPUTE_QC_METRICS.nf'
+include {SCOV2_SUBTYPING} from './workflows/SCOV2_SUBTYPING.nf'
 include {GENERATE_CLASSIFICATION_REPORT} from './workflows/GENERATE_CLASSIFICATION_REPORT.nf'
 
 
@@ -53,8 +53,10 @@ workflow {
     --ivar_min_depth           : ${params.ivar_min_depth}
     --ivar_freq_threshold      : ${params.ivar_freq_threshold}
 
-  --> GENERATE_CLASSIFICATION_REPORT workflow parameters:
-    --min_coverage_percent     : ${params.min_coverage_percent}
+  --> COMPUTE_QC_METRICS workflow parameters:
+    --qc_depth_threshold                                 : ${params.qc_depth_threshold}
+    --qc_min_percent_positions_exceeding_depth_threshold : ${params.qc_min_percent_positions_exceeding_depth_threshold}
+    --qc_min_percent_non_n                               : ${params.qc_min_percent_non_n}
 
   --> viral subtyping branching parameters:
     --scv2_keyword             : ${params.scv2_keyword}
@@ -78,11 +80,10 @@ workflow {
   ------------------------------------------
 """.stripIndent()
 
-  // Validate input parameters
-  validateParameters()
-  // Print summary of supplied parameters
-  log.info paramsSummaryLog(workflow)
-
+    // Validate input parameters
+    validateParameters()
+    // Print summary of supplied parameters
+    log.info paramsSummaryLog(workflow)
 
     // === 1 - Process input ===
     check_main_params()
@@ -98,10 +99,9 @@ workflow {
     // === 3 - Generate consensus ==
     GENERATE_CONSENSUS(sample_taxid_ch)
 
-    // === 4 - Compute QC Metrics
+    // === 4 - Generate consensus ==
     COMPUTE_QC_METRICS(GENERATE_CONSENSUS.out)
-
-    // === 5 - branching output from QC for viral specific subtyping
+    // === 5 - branching output from generate_consensus for viral specific subtyping
 
     // 5.1 - process pre_report files
     // NOTE: if the consensus_gen entry point is removed,
@@ -122,37 +122,34 @@ workflow {
       .view{it -> log.warn("Excluding ${it} as input due to small size ( < 1 byte)")}
 
     // 5.2 - add report info to out qc metric chanel and branch for SCOV2 subtyping
-    COMPUTE_QC_METRICS.out // tuple (meta, bam)
-      .map { meta, bam -> tuple(meta.id, meta, bam)}
-      .join(sample_report_ch)//, by: 0) // tuple (id, meta, bam, report)
-      .map {_id, meta, bam, report ->
-        meta.putAll(report)
-        tuple(meta, bam)
+    COMPUTE_QC_METRICS.out 
+      .map { meta, bams, fasta, variants, qc -> tuple(meta.id, meta, bams, fasta, variants, qc)}
+      .join(sample_report_ch)//, by: 0) // tuple (id, meta, fasta, report)
+      .map {_id, meta, bams, fasta, variants, qc, report ->
+        new_meta = meta.plus(report)
+        tuple (new_meta, fasta) 
       }
       .branch{ it ->
         scv2_subtyping_workflow_in_ch: it[0].ref_selected.contains("${params.scv2_keyword}")
         no_subtyping_ch: true
       }
-      .set {qc_metrics_out_ch}
-
+      .set {qc_out_ch}
+      
     // 5.3 - do SCOV2 subtyping
     if (params.do_scov2_subtyping == true){
-      qc_metrics_out_ch.scv2_subtyping_workflow_in_ch
-        .map {it -> tuple(it[0], it[0].consensus_fa)}
-        .set {scov_2_subt_In_ch}
-      SCOV2_SUBTYPING(scov_2_subt_In_ch)
+      SCOV2_SUBTYPING(qc_out_ch.scv2_subtyping_workflow_in_ch)
       SCOV2_SUBTYPING.out.set{scov2_subtyped_ch}
     }
 
-  // === 6 - write final classification report
+    // === 6 - write final classification report
 
-  if (!params.do_scov2_subtyping == true){
-    scov2_subtyped_ch = Channel.empty()
-  }
-  qc_metrics_out_ch.no_subtyping_ch.concat(scov2_subtyped_ch)
-    .set{report_in_ch}
+    if (!params.do_scov2_subtyping == true){
+        scov2_subtyped_ch = Channel.empty()
+    }
+    qc_out_ch.no_subtyping_ch.concat(scov2_subtyped_ch)
+        .set{report_in_ch}
 
-  GENERATE_CLASSIFICATION_REPORT(report_in_ch)
+    GENERATE_CLASSIFICATION_REPORT(report_in_ch)
 }
 
 def __check_if_params_file_exist(param_name, param_value){

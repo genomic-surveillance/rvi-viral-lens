@@ -27,6 +27,7 @@ process write_classification_report {
     //publishDir "${params.outdir}/", mode: 'copy'
 
     input:
+        val(header_line)
         val(list_of_report_lines)
         val(report_filename)
     output:
@@ -35,15 +36,12 @@ process write_classification_report {
     script:
         output_report_file = "${report_filename}.csv"
         // Replace " with ' to prevent issues with writing lines to file
-        sample_headers_1="Sample_ID,Virus_Taxon_ID,Virus,Species"
-        sample_headers_2="Reference_Taxon_ID,Selected_Reference,Flu_Segment,Reference_Subtype,Sample_Subtype"
-        qc_headers="Percentage_of_Genome_Covered,Total_Mapped_Reads,Longest_non_N_segment,Percentage_of_N_bases"
-        mut_info_headers = "total_mutations,n_insertions,n_deletions,n_snps,ti_tv_ratio"
         report_lines = list_of_report_lines.join("").replaceAll(/"/, "'")
+        header = "${header_line}"
 
         """
         # Write header to output report file
-        echo "${sample_headers_1},${sample_headers_2},${qc_headers},${mut_info_headers}" > ${output_report_file}_pre
+        echo "${header}" > ${output_report_file}_pre
 
         # Write data lines to report file
         echo "${report_lines}" >> ${output_report_file}_pre

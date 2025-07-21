@@ -1,5 +1,7 @@
 // Copyright (C) 2023 Genome Surveillance Unit/Genome Research Ltd.
 
+import groovy.json.JsonSlurper
+
 include {run_qc_script} from '../modules/run_qc_script.nf'
 
 workflow COMPUTE_QC_METRICS {
@@ -42,46 +44,23 @@ workflow COMPUTE_QC_METRICS {
     */
 
     take:
-        qc_metrics_In_ch // [meta, fasta_file]
+        qc_metrics_In_ch // [meta, bam, fasta_file, ivar_variants_file]
 
     main:
-        qc_metrics_In_ch
-            | map {meta, fasta_file ->
-                // store fasta_files at meta
-                def new_meta = meta.plus([consensus_fa: fasta_file])
-                tuple(new_meta, new_meta.bam_file, fasta_file, new_meta.ref_files[0], new_meta.mpileup_file)
-            }
-            | set{qc_script_In_ch}
 
-        // compute percentage of bases covered
-        run_qc_script(qc_script_In_ch)
-        
-        // populate meta with the qc values
+        run_qc_script(qc_metrics_In_ch)
+
         run_qc_script.out
-            | map {meta, qc_csv, stdout_str -> 
-                def tokens_lst = stdout_str.tokenize(",")
+            | map {meta, bams, consensus, variants, qc_json ->
+                def json_map = new JsonSlurper().parse(new File(qc_json.toString()))
                 // create a new meta with QC metrics
-                def new_meta = meta.plus([
-                    percentage_of_N_bases: tokens_lst[1], // Proportion of ambiguous bases in the consensus sequence.
-                    percentage_genome_coverage: tokens_lst[2], // Proportion of the genome covered by aligned reads.
-                    longest_no_N_segment: tokens_lst[3], // The longest continuous segment without N bases.
-                    total_aligned_reads: tokens_lst[4], // Number of reads aligned to the reference.
-                    total_unmapped_reads: tokens_lst[10].replace("\n",""), // Number of reads that did not align.
-                    total_mapped_reads: tokens_lst[8] // Number of reads that mapped successfully.
-                ])
+                def new_meta = meta.plus(json_map)
+                tuple(new_meta, bams, consensus, variants, qc_json) }
+            | set {qc_out_ch}
 
-                tuple(new_meta, new_meta.bam_file)
-            }
-            | set {qc_Out_ch}
     emit:
-        qc_Out_ch // (meta, bam_file)
-
-//-------------------------------------------------------------------
-// Note: The QC script's output is expected to be in a specific 
-// format; any changes in this format may require adjustments in the
-// parsing logic within the workflow.
+        qc_out_ch // (meta, bams, fasta, variants)
 }
-
 
 workflow {
     manifest_channel = Channel.fromPath(params.manifest_file)
@@ -89,16 +68,8 @@ workflow {
     | map { row ->
         def meta = [id:row.id,
             taxid:row.taxid,
-            sample_id:row.sample_id,
-            bam_file:row.bam_file,
-            ref_files:[row.ref_files],
-            mpileup_file:row.mpileup_file
-        ]
-        [meta, row.fasta_file]
+            sample_id:row.sample_id]
+        [meta, row.bam_file, row.fasta_file, row.variants_file, row.qc_json_file]
     }
     COMPUTE_QC_METRICS(manifest_channel)
 }
-
-//-------------------------------------------------------------------
-// TODO: We should consider to make reference and bam files
-//           explicitly on the input channels.

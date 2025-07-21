@@ -1,7 +1,6 @@
 // Copyright (C) 2023 Genome Surveillance Unit/Genome Research Ltd.
 
 include {write_classification_report} from '../modules/write_classification_report.nf'
-include {write_classification_report as write_invalid_classification_report} from '../modules/write_classification_report.nf'
 workflow GENERATE_CLASSIFICATION_REPORT {
     /*
     -----------------------------------------------------------------
@@ -52,21 +51,12 @@ workflow GENERATE_CLASSIFICATION_REPORT {
     */
 
     take:
-        meta_ch // meta
+        report_in_ch // meta
 
     main:
     
         // Create a report line for every sample and then aggregate them
-        report_lines_ch = meta_ch
-        .branch{ it ->
-            def sample_cov = it[0].percentage_genome_coverage as Float
-            def min_cov = params.min_coverage_percent as Float
-
-            valid: sample_cov > min_cov
-            not_valid: sample_cov <= min_cov
-        }
-
-        report_lines_ch.valid.map{it ->
+        report_in_ch.map{it ->
             // convert null values for type and segments to None strings
             // if virus_subtype or flu_segment are null, set them to 'None'
             def virus_subtype = (it[0].virus_subtype == null) ? 'None' : it[0].virus_subtype
@@ -81,21 +71,10 @@ workflow GENERATE_CLASSIFICATION_REPORT {
             report_lines
         }.collect().set{valid_lines_ch}
 
+
+
         // Write all of the per-sample report lines to a report file
-        write_classification_report(valid_lines_ch, "classification_report")
-
-        // write non valid report
-        report_lines_ch.not_valid.map{it ->
-            // if virus_subtype or flu_segment are null, set them to 'None'
-            def virus_subtype = (it[0].virus_subtype == null) ? 'None' : it[0].virus_subtype
-            // if flu_segment is null, set it to 'None'
-            def flu_segment = (it[0].flu_segment == null) ? 'None' : it[0].flu_segment
-
-            def report_lines_invalid = concatenate_report_lines(it[0], flu_segment, virus_subtype)
-            report_lines_invalid
-        }.collect().set{not_valid_lines_ch}
-
-        write_invalid_classification_report(not_valid_lines_ch, "classification_report_invalid")
+        write_classification_report( get_header_line(), valid_lines_ch, "classification_report")
 
     emit:
         write_classification_report.out // report file
@@ -116,26 +95,16 @@ sample_002,67890,ref2.fasta,Influenza B,,Segment 2,90.0,9500,450,5.0
 
 }
 
-workflow {
-    manifest_channel = Channel.fromPath(params.manifest_file)
-    | splitCsv(header: true, sep: ',')
-    | map { row ->
-        def meta = [[id:row.sample_id,
-            taxid:row.taxid,
-            ref_selected:row.ref_selected,
-            virus_name:row.virus_name,
-            virus_subtype:row.virus_subtype,
-            flu_segment:row.flu_segment,
-            percentage_genome_coverage:row.percentage_genome_coverage,
-            total_mapped_reads:row.total_mapped_reads,
-            longest_no_N_segment:row.longest_no_N_segment,
-            percentage_of_N_bases:row.percentage_of_N_bases
-        ]]
-    }
 
-    GENERATE_CLASSIFICATION_REPORT(manifest_channel)
+def get_header_line() {
+
+    def sample_headers_1 = "Sample_ID,Virus_Taxon_ID,Virus,Species"
+    def sample_headers_2="Reference_Taxon_ID,Selected_Reference,Flu_Segment,Reference_Subtype,Sample_Subtype"
+    def qc_headers="Percentage_of_Genome_Covered,Total_Mapped_Reads,Total_Mapped_Bases,Longest_non_N_segment,Percentage_non_N_bases,QC_status"
+    def mut_info_headers = "total_mutations,n_insertions,n_deletions,n_snps,ti_tv_ratio"
+
+    return "${sample_headers_1},${sample_headers_2},${qc_headers},${mut_info_headers}"
 }
-
 
 def concatenate_report_lines(meta, flu_segment, virus_subtype) {
     /*
@@ -162,8 +131,8 @@ def concatenate_report_lines(meta, flu_segment, virus_subtype) {
     
     def sample_info_1 = "${meta.sample_id},${meta.virus},${meta.report_name},${meta.virus_name}"
     def sample_info_2 = "${meta.taxid},${meta.ref_selected.replace(",","|")},${flu_segment},${virus_subtype},${meta.sample_subtype}"
-    def qc_info_v = "${meta.percentage_genome_coverage},${meta.total_mapped_reads.replace("^M", "")},${meta.longest_no_N_segment},${meta.percentage_of_N_bases}"
-    def mut_info_v = "${meta.total_mutations},${meta.n_insertions},${meta.n_deletions},${meta.n_snps},${meta.ti_tv_ratio}"
+    def qc_info_v = "${meta.percent_positions_exceeding_depth_threshold},${meta.reads_mapped},${meta.bases_mapped},${meta.longest_non_n_subsequence},${meta.percent_non_n_bases},${meta.qc_status}"
+    def mut_info_v = "${meta.mutations},${meta.insertions},${meta.deletions},${meta.snps},${meta.ti_tv_ratio}"
     return "${sample_info_1},${sample_info_2},${qc_info_v},${mut_info_v}\n"
 }
 
@@ -180,20 +149,34 @@ def check_classification_report_params(){
 
     */
     def errors = 0
-    // Was the min_coverage_percent provided?
-    if (params.min_coverage_percent == null){
-        log.error("No min_coverage_percent set")
-        errors +=1
-    }
-
-    // if provided, check if it is float
-    def min_cov_value = params.min_coverage_percent as Float
-
-    // if float, it should be between [0.0,100.0]
-    if (min_cov_value < 0.0 || min_cov_value > 100.0){
-            log.error("min_coverage_percent value set ($min_cov_value) must be >=0.0 and <=100.0")
-            errors +=1
-    }
-
     return errors
 }
+
+
+workflow {
+    manifest_channel = Channel.fromPath(params.manifest_file)
+    | splitCsv(header: true, sep: ',')
+    | map { row ->
+        def meta = [[id:row.sample_id,
+            taxid:row.taxid,
+            ref_selected:row.ref_selected,
+            virus_name:row.virus_name,
+            virus_subtype:row.virus_subtype,
+            flu_segment:row.flu_segment,
+            percent_positions_exceeding_depth_threshold:row.percent_positions_exceeding_depth_threshold,
+            reads_mapped:row.reads_mapped,
+            bases_mapped:row.bases_mapped,
+            longest_non_n_subsequence:row.longest_non_n_subsequence,
+            percent_non_n_bases:row.percent_non_n_bases,
+            qc_status:row.qc_status,
+            mutations:row.mutations,
+            insertions:row.insertions,
+            deletions:row.deletions,
+            snps:row.snps,
+            ti_tv_ratio:row.ti_tv_ratio
+        ]]
+    }
+
+    GENERATE_CLASSIFICATION_REPORT(manifest_channel)
+}
+
