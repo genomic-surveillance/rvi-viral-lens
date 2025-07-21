@@ -36,7 +36,9 @@ def collect_mutation_stats(stats:dict, ivar_variants_file:str):
     with open(ivar_variants_file, 'r') as f:
         reader = csv.DictReader(f, delimiter='\t')
         
-        # for each row, skip any which PASS equal False
+        tis = 0
+        tvs = 0
+
         # count mutations
         for row in reader:
             # Skip if not PASSing
@@ -63,16 +65,11 @@ def collect_mutation_stats(stats:dict, ivar_variants_file:str):
                 stats['snps'] += 1
                 # Check for transition/transversion
                 if (ref, alt) in transitions:
-                    stats['transitions'] += 1
+                    tis += 1
                 elif (ref, alt) in transversion:
-                    stats['transversions'] += 1
+                    tvs += 1
     
-    # Calculate Ti/Tv ratio
-    try:
-        ti_tv_ratio = stats['transitions'] / stats['transversions']
-        stats["ti_tv_ratio"] = round(ti_tv_ratio,2)
-    except ZeroDivisionError:
-        stats["ti_tv_ratio"] = "inf"
+    stats['ti_tv_ratio'] = f"{tis}/{tvs}"
  
 
 ############ 
@@ -107,28 +104,26 @@ def collect_read_stats( stats: dict, flagstat_file: str):
     stats['reads_unmapped'] = total_reads - int(stats['reads_mapped'])
 
 ############
-def collect_depth_stats( stats: dict, depths_file: str, min_depth: int):
+def collect_depth_stats( stats: dict, depths_file: str ):
     #
     # Samtools depth output: <sequence name>  <position>  <coverage>
     #
     total_aligned_bases = 0
     positions_exceeding_min_depth = 0
-    total_ref_length = 0
+    for i in range(0, 101, 5):
+        stats['positions_exceeding_depth'][str(i)] = 0
 
     with open(depths_file, "r") as depth_file_reader:
         for line in depth_file_reader:
             parts = line.rstrip().split()
             depth = int(parts[2])
             total_aligned_bases += depth
-            if int(depth) >= min_depth:
-                positions_exceeding_min_depth += 1
+            for i in range(0, 101, 5):
+                if (int(depth) >= i):
+                    stats['positions_exceeding_depth'][str(i)] += 1
 
-    stats['depth_threshold'] = min_depth
+    stats['percent_positions_exceeding_depth_10'] = round(100 * int(stats['positions_exceeding_depth']["10"]) / int(stats['reference_length']), 2)
     stats['bases_mapped'] = total_aligned_bases
-    percent_positions_exceeding_min_depth = positions_exceeding_min_depth / int(stats['reference_length']) * 100.0
-       
-    stats['positions_exceeding_depth_threshold'] = positions_exceeding_min_depth
-    stats['percent_positions_exceeding_depth_threshold'] = round(percent_positions_exceeding_min_depth, 2)
 
 ############
 def collect_consensus_sequence_stats( stats: dict, fasta_file : str):
@@ -156,7 +151,6 @@ def get_pct_non_N_bases(seq : str) -> float:
     for char in seq:
         if char != 'n':
             non_n_count += 1
-            print ("FOUND NON-N: ", char) 
         else:
             n_count += 1
        
@@ -204,36 +198,25 @@ def generate_qc_file(args: argparse.ArgumentParser.parse_args):
         'insertions': 0,
         'deletions': 0,
         'snps': 0,
-        'transitions': 0,
-        'transversions': 0,
-        "ti_tv_ratio": 0,
+        "ti_tv_ratio": "0/0",
         # read alignment stats
         "reads_mapped" : 0,
         "bases_mapped" : 0,
         "reads_mapped_in_proper_pairs" : 0,
         # coverage stats
         "reference_length" : 0,
-        "depth_threshold" : 0,
-        "positions_exceeding_depth_threshold" : 0,
-        "percent_positions_exceeding_depth_threshold" : 0.00,
+        "positions_exceeding_depth" : {},
+        "percent_positions_exceeding_depth_10" : 0.00,
         # consensus stats
         "percent_non_n_bases" : 0.00,
-        "longest_non_n_subsequence" : 0,
-        "qc_status" : "FAIL"
+        "longest_non_n_subsequence" : 0
     }
 
     collect_bam_header_stats( stats, args.samtools_bam_header_file )
     collect_mutation_stats( stats, args.ivar_variants_file )
     collect_read_stats( stats, args.samtools_flagstat_file)
-    collect_depth_stats ( stats, args.samtools_depth_file, args.depth_threshold )
+    collect_depth_stats ( stats, args.samtools_depth_file )
     collect_consensus_sequence_stats( stats, args.fasta_file)
-
-    if (
-        float(stats['percent_non_n_bases']) >= args.qc_min_percent_non_n and 
-        float(stats['percent_positions_exceeding_depth_threshold']) >= args.qc_min_percent_positions_exceeding_depth_threshold
-    ):
-        stats['qc_status'] = "PASS"
-
 
     # Write output header & QC columns to a JSON file
     with open(args.outfile, 'w') as jsonfile:
@@ -255,13 +238,7 @@ def main():
         help='''Output of samtools flagstat on source BAM file for the consensus''')
     parser.add_argument('--ivar_variants_file', required=True, type=str,
         help='''Output of ivar variants command, to allow summary mutation information to be reported''')
-    parser.add_argument('--depth_threshold', required=False, type=int, default=10,
-        help='''Value used for when computing positions_exceeding_depth_threshold, optional''')
-    parser.add_argument('--qc_min_percent_positions_exceeding_depth_threshold', required=True, type=float, 
-        help='''Sequences with percent_positions_exceeding_depth_threshold less than this number will be recorded as QC fail''')
-    parser.add_argument('--qc_min_percent_non_n', required=True, type=float, 
-        help='''Sequences with percent_non_n_bases less this this number will be recorded as QC fail''')   
-
+  
     args = parser.parse_args()
     generate_qc_file(args)
 

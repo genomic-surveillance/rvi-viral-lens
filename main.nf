@@ -53,11 +53,6 @@ workflow {
     --ivar_min_depth           : ${params.ivar_min_depth}
     --ivar_freq_threshold      : ${params.ivar_freq_threshold}
 
-  --> COMPUTE_QC_METRICS workflow parameters:
-    --qc_depth_threshold                                 : ${params.qc_depth_threshold}
-    --qc_min_percent_positions_exceeding_depth_threshold : ${params.qc_min_percent_positions_exceeding_depth_threshold}
-    --qc_min_percent_non_n                               : ${params.qc_min_percent_non_n}
-
   --> viral subtyping branching parameters:
     --scv2_keyword             : ${params.scv2_keyword}
 

@@ -64,10 +64,7 @@ process run_qc_script {
         --samtools_depth_file ${samtools_depth} \
         --samtools_flagstat_file ${samtools_flagstat} \
         --samtools_bam_header_file ${samtools_bam_header} \
-        --ivar_variants_file ${ivar_variants} \
-        --depth_threshold ${params.qc_depth_threshold} \
-        --qc_min_percent_positions_exceeding_depth_threshold ${params.qc_min_percent_positions_exceeding_depth_threshold} \
-        --qc_min_percent_non_n ${params.qc_min_percent_non_n}
+        --ivar_variants_file ${ivar_variants}
     """
 
 }

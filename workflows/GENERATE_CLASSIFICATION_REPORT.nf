@@ -100,7 +100,7 @@ def get_header_line() {
 
     def sample_headers_1 = "Sample_ID,Virus_Taxon_ID,Virus,Species"
     def sample_headers_2="Reference_Taxon_ID,Selected_Reference,Flu_Segment,Reference_Subtype,Sample_Subtype"
-    def qc_headers="Percentage_of_Genome_Covered,Total_Mapped_Reads,Total_Mapped_Bases,Longest_non_N_segment,Percentage_non_N_bases,QC_status"
+    def qc_headers="Percentage_of_Genome_Covered,Total_Mapped_Reads,Total_Mapped_Bases,Longest_non_N_segment,Percentage_non_N_bases"
     def mut_info_headers = "total_mutations,n_insertions,n_deletions,n_snps,ti_tv_ratio"
 
     return "${sample_headers_1},${sample_headers_2},${qc_headers},${mut_info_headers}"
@@ -131,7 +131,7 @@ def concatenate_report_lines(meta, flu_segment, virus_subtype) {
     
     def sample_info_1 = "${meta.sample_id},${meta.virus},${meta.report_name},${meta.virus_name}"
     def sample_info_2 = "${meta.taxid},${meta.ref_selected.replace(",","|")},${flu_segment},${virus_subtype},${meta.sample_subtype}"
-    def qc_info_v = "${meta.percent_positions_exceeding_depth_threshold},${meta.reads_mapped},${meta.bases_mapped},${meta.longest_non_n_subsequence},${meta.percent_non_n_bases},${meta.qc_status}"
+    def qc_info_v = "${meta.percent_positions_exceeding_depth_10},${meta.reads_mapped},${meta.bases_mapped},${meta.longest_non_n_subsequence},${meta.percent_non_n_bases}"
     def mut_info_v = "${meta.mutations},${meta.insertions},${meta.deletions},${meta.snps},${meta.ti_tv_ratio}"
     return "${sample_info_1},${sample_info_2},${qc_info_v},${mut_info_v}\n"
 }
@@ -163,7 +163,7 @@ workflow {
             virus_name:row.virus_name,
             virus_subtype:row.virus_subtype,
             flu_segment:row.flu_segment,
-            percent_positions_exceeding_depth_threshold:row.percent_positions_exceeding_depth_threshold,
+            percent_positions_exceeding_depth_10:row.percent_positions_exceeding_depth_10,
             reads_mapped:row.reads_mapped,
             bases_mapped:row.bases_mapped,
             longest_non_n_subsequence:row.longest_non_n_subsequence,
