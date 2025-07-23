@@ -49,7 +49,6 @@ process run_ivar {
   */
 
   tag "${meta.id}"
-  label "sample_output"
   label "ivar"
 
   input:
