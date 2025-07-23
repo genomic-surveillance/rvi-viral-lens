@@ -1,6 +1,10 @@
 // Copyright (C) 2023 Genome Surveillance Unit/Genome Research Ltd.
 
-include {write_classification_report} from '../modules/write_classification_report.nf'
+include {write_classification_report_csv} from '../modules/write_classification_report.nf'
+include { write_single_properties_json } from '../modules/write_properties_json.nf'
+include { write_collated_properties_json } from '../modules/write_properties_json.nf'
+
+
 workflow GENERATE_CLASSIFICATION_REPORT {
     /*
     -----------------------------------------------------------------
@@ -55,29 +59,48 @@ workflow GENERATE_CLASSIFICATION_REPORT {
 
     main:
     
-        // Create a report line for every sample and then aggregate them
-        report_in_ch.map{it ->
+        report_in_ch.map{ meta ->
             // convert null values for type and segments to None strings
             // if virus_subtype or flu_segment are null, set them to 'None'
-            def virus_subtype = (it[0].virus_subtype == null) ? 'None' : it[0].virus_subtype
+            def virus_subtype = (meta.virus_subtype == null) ? 'None' : meta.virus_subtype
             // if flu_segment is null, set it to 'None'
-            def flu_segment = (it[0].flu_segment == null) ? 'None' : it[0].flu_segment
+            def flu_segment = (meta.flu_segment == null) ? 'None' : meta.flu_segment
 
-            // sample_id, virus, report_name, virus_name, taxid, reference_selected, flu_segment, 
-            // virus_subtype, sample_subtype, percentage_genome_coverage, total_mapped_reads,
-            // longest_no_N_segment, percentage_of_N_bases
-            def report_lines = concatenate_report_lines(it[0], flu_segment, virus_subtype)
+            def new_meta = meta.plus(['flu_segment': flu_segment, 'virus_subtype': virus_subtype]) 
 
-            report_lines
-        }.collect().set{valid_lines_ch}
+            //
+            // Clean up the map to restrict it to simple types that can be written into reports
+            //
+            def clean 
+            clean = { value ->
+                if (value instanceof Map) {
+                    return value.collectEntries { k, v -> [(k): clean(v)] }.findAll { k, v -> v != null }
+                }
+                if (value instanceof List) {
+                    return value.collect { clean(it) }
+                }
+                if (value instanceof CharSequence || value instanceof Number || value instanceof Boolean) {
+                    return value
+                }
+                return null
+            }
+            def cleaned = clean(new_meta)
+            return cleaned
+        }.set{ consensus_sequence_properties_ch }
 
+        // write individual JSONs, and a collated JSON
+        write_single_properties_json( consensus_sequence_properties_ch )
+        write_collated_properties_json( consensus_sequence_properties_ch.collect(), "consensus_sequence_properties" )
 
+        consensus_sequence_properties_ch.map { meta ->
+            get_report_line( meta )
+        }.collect().set{ report_lines_ch } 
 
         // Write all of the per-sample report lines to a report file
-        write_classification_report( get_header_line(), valid_lines_ch, "classification_report")
+        write_classification_report_csv( get_header_line(), report_lines_ch , "classification_report" )
 
     emit:
-        write_classification_report.out // report file
+        write_classification_report_csv.out // report file
 /*
 ---------------------------------------------------------------------
 # Example Manifest File
@@ -106,7 +129,7 @@ def get_header_line() {
     return "${sample_headers_1},${sample_headers_2},${qc_headers},${mut_info_headers}"
 }
 
-def concatenate_report_lines(meta, flu_segment, virus_subtype) {
+def get_report_line(meta) {
     /*
     -----------------------------------------------------------------
     Concatenates a list of report lines into a single string.
@@ -130,7 +153,7 @@ def concatenate_report_lines(meta, flu_segment, virus_subtype) {
     // total_mutations,n_insertions,n_deletions,n_snps,ti_tv_ratio
     
     def sample_info_1 = "${meta.sample_id},${meta.virus},${meta.report_name},${meta.virus_name}"
-    def sample_info_2 = "${meta.taxid},${meta.ref_selected.replace(",","|")},${flu_segment},${virus_subtype},${meta.sample_subtype}"
+    def sample_info_2 = "${meta.taxid},${meta.ref_selected.replace(",","|")},${meta.flu_segment},${meta.virus_subtype},${meta.sample_subtype}"
     def qc_info_v = "${meta.percent_positions_exceeding_depth_10},${meta.reads_mapped},${meta.bases_mapped},${meta.longest_non_n_subsequence},${meta.percent_non_n_bases}"
     def mut_info_v = "${meta.mutations},${meta.insertions},${meta.deletions},${meta.snps},${meta.ti_tv_ratio}"
     return "${sample_info_1},${sample_info_2},${qc_info_v},${mut_info_v}\n"

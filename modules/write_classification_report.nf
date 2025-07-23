@@ -1,5 +1,5 @@
 // Copyright (C) 2023 Genome Surveillance Unit/Genome Research Ltd.
-process write_classification_report {
+process write_classification_report_csv {
     /*
     * ---------------------------------------------------------------
     * Write classification report
@@ -24,8 +24,7 @@ process write_classification_report {
     * ---------------------------------------------------------------
     */
     label "run_output"
-    //publishDir "${params.outdir}/", mode: 'copy'
-
+   
     input:
         val(header_line)
         val(list_of_report_lines)
@@ -40,13 +39,11 @@ process write_classification_report {
         header = "${header_line}"
 
         """
-        # Write header to output report file
         echo "${header}" > ${output_report_file}_pre
 
-        # Write data lines to report file
         echo "${report_lines}" >> ${output_report_file}_pre
+
         sed -e "s/\r//g" ${output_report_file}_pre > ${output_report_file}
-        # NOTE: the sed expression is there to remove "^M" added characteres
         """
 /*
     * ---------------------------------------------------------------
