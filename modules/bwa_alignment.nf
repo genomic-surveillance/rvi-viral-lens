@@ -24,20 +24,19 @@ process bwa_alignment_and_post_processing {
             (`${meta.taxid}.fa`).
     
     * Output Tuple:
-        - Sorted BAM file (`*.sorted.bam`).
-        - Index file for the sorted BAM (`*.sorted.bam.bai`).
+        - Input tuple, plus an additional list comprising:
+          - Sorted BAM file (`*.sorted.bam`).
+          - Index file for the sorted BAM (`*.sorted.bam.bai`).
     
     * ---------------------------------------------------------------
     * 
     */
-    label "sample_output"
-
-
+    
     input:
         tuple val(meta), path(fastq), path(ref_files)
 
     output:
-        tuple val(meta), path("*.sorted.bam*")
+        tuple val(meta), path(fastq), path(ref_files), path("*.sorted.bam*")
 
     script:
         ref_fa = "${meta.taxid}.fa"

@@ -88,82 +88,98 @@ workflow {
     // ==========================
     // === 2 - Map reads to taxid
     SORT_READS_BY_REF(reads_ch)
-    sample_taxid_ch = SORT_READS_BY_REF.out.sample_taxid_ch // tuple (meta, reads)
-    sample_pre_report_ch = SORT_READS_BY_REF.out.sample_pre_report_ch
-
+ 
     // === 3 - Generate consensus ==
-    GENERATE_CONSENSUS(sample_taxid_ch)
+    GENERATE_CONSENSUS( SORT_READS_BY_REF.out.sample_taxid_ch )
 
     // === 4 - Compute QC metrics ==
     COMPUTE_QC_METRICS(GENERATE_CONSENSUS.out)
+    // Remove entries from output channel correponding to consensus sequences that are 100% N,
+    // and use a lightweight process to publish the survivors
+    //
+    COMPUTE_QC_METRICS.out
+        .filter{  it -> (it[0].longest_non_n_subsequence > 0) }
+        .set{filtered_consensus_ch}
 
-    // === 5 - branching output from generate_consensus for viral specific subtyping
+    // === 5 - Publish surviving consensus sequences and associated supporting files
+    publish_files_lite( filtered_consensus_ch )
 
-    // 5.1 - process pre_report files
-    // NOTE: if the consensus_gen entry point is removed,
-    //           this processing should be moved back to 
-    //           SORT_READS_BY_REF workflow
-    sample_pre_report_ch
-      .filter{it -> (it.size() > 1)} // remove empty pre_reports
-      .splitCsv(header: true, sep:"\t")
-      .map{it -> 
-        def id="${it.sample_id}.${it.selected_taxid}"
-        tuple(id, it)
-      }
-      .set{sample_report_ch}
+    // === 6 - branching output from generate_consensus for viral specific subtyping
 
-    // raise warning for sample taxids which had empty pre_reports
-    sample_pre_report_ch
-      .filter{it -> (it.size() <= 1)}
-      .view{it -> log.warn("Excluding ${it} as input due to small size ( < 1 byte)")}
+    // construct id for the report channel 
+    SORT_READS_BY_REF.out.sample_pre_report_ch
+        .map{ it -> 
+            def id="${it.sample_id}.${it.selected_taxid}"
+            tuple(id, it)
+        }
+        .set{sample_report_with_join_key_ch}
 
-    // 5.2 - add report info to out qc metric chanel and branch for SCOV2 subtyping
-    COMPUTE_QC_METRICS.out 
-      .map { meta, bams, fasta, variants, qc -> tuple(meta.id, meta, bams, fasta, variants, qc)}
-      .join(sample_report_ch)//, by: 0) // tuple (id, meta, fasta, report)
-      .map {_id, meta, bams, fasta, variants, qc, report ->
-        new_meta = meta.plus(report)
-        tuple (new_meta, fasta) 
-      }
-      .branch{ it ->
-        scv2_subtyping_workflow_in_ch: it[0].ref_selected.contains("${params.scv2_keyword}")
-        no_subtyping_ch: true
-      }
-      .set {qc_out_ch}
+    // 6.1 - add report info to out qc metric chanel and branch for SCOV2 subtyping
+    filtered_consensus_ch 
+        .map { meta, bams, fasta, variants, qc -> tuple(meta.id, meta, bams, fasta, variants, qc)}
+        .join(sample_report_with_join_key_ch)//, by: 0) // tuple (id, meta, fasta, report)
+        .map {_id, meta, bams, fasta, variants, qc, report ->
+            new_meta = meta.plus(report)
+            tuple (new_meta, fasta) 
+        }
+        .branch{ it ->
+            scv2_subtyping_workflow_in_ch: it[0].ref_selected.contains("${params.scv2_keyword}")
+            no_subtyping_ch: true
+        }
+        .set {filtered_consensus_by_type_ch}
       
-    // 5.3 - do SCOV2 subtyping
+    // 6.2 - do SCOV2 subtyping
     if (params.do_scov2_subtyping == true){
-      SCOV2_SUBTYPING(qc_out_ch.scv2_subtyping_workflow_in_ch)
-      SCOV2_SUBTYPING.out.set{scov2_subtyped_ch}
+        SCOV2_SUBTYPING(filtered_consensus_by_type_ch.scv2_subtyping_workflow_in_ch)
+        SCOV2_SUBTYPING.out.set{scov2_subtyped_ch}
     }
 
-    // === 6 - write final classification report
+    // === 7 - write final classification reports
 
     if (!params.do_scov2_subtyping == true){
         scov2_subtyped_ch = Channel.empty()
     }
-    qc_out_ch.no_subtyping_ch.concat(scov2_subtyped_ch)
+    filtered_consensus_by_type_ch.no_subtyping_ch.concat(scov2_subtyped_ch)
+        .map{ meta, fasta ->  meta } 
         .set{report_in_ch}
 
     GENERATE_CLASSIFICATION_REPORT(report_in_ch)
 }
 
+
+//
+//
+//
+process publish_files_lite {
+    label "sample_output"
+
+    input:
+        tuple val(meta), path(bams), path(consensus), path(variants), path(qc)
+
+    output:
+        tuple val(meta), path(bams), path(consensus), path(variants), path(qc)
+
+    script:
+    """
+    """
+}
+
 def __check_if_params_file_exist(param_name, param_value){
-  def error = 0
+    def error = 0
 
-  if (!(param_value==null)){
-    def param_file = file(param_value)
-    if (!param_file.exists()){
-      log.error("${param_file} does not exist")
-      error +=1
+    if (!(param_value==null)){
+        def param_file = file(param_value)
+        if (!param_file.exists()){
+            log.error("${param_file} does not exist")
+            error +=1
+        }
     }
-  }
 
-  if (param_value==null){
-    log.error("${param_name} must be provided")
-    error +=1
-  }
-  return error
+    if (param_value==null){
+        log.error("${param_name} must be provided")
+        error +=1
+    }
+    return error
 }
 
 def check_main_params(){
@@ -183,25 +199,25 @@ def check_main_params(){
  * https://www.nextflow.io/docs/latest/metadata.html
  */
 workflow.onComplete {
-  // Log colors ANSI codes
-  /*
-  * ANSI escape codes to color output messages
-  */
-  def ANSI_GREEN = "\033[1;32m"
-  def ANSI_RED = "\033[1;31m"
-  def ANSI_RESET = "\033[0m"
+    // Log colors ANSI codes
+    /*
+    * ANSI escape codes to color output messages
+    */
+    def ANSI_GREEN = "\033[1;32m"
+    def ANSI_RED = "\033[1;31m"
+    def ANSI_RESET = "\033[0m"
  
-  println """
-  Pipeline execution summary
-  ---------------------------
-  Completed at : ${ANSI_GREEN}${workflow.complete}${ANSI_RESET}
-  Duration     : ${ANSI_GREEN}${workflow.duration}${ANSI_RESET}
-  Success      : ${workflow.success ? ANSI_GREEN : ANSI_RED}${workflow.success}${ANSI_RESET}
-  Results Dir  : ${ANSI_GREEN}${file(params.outdir)}${ANSI_RESET}
-  Work Dir     : ${ANSI_GREEN}${workflow.workDir}${ANSI_RESET}
-  Exit status  : ${ANSI_GREEN}${workflow.exitStatus}${ANSI_RESET}
-  Error report : ${ANSI_GREEN}${workflow.errorReport ?: '-'}${ANSI_RESET}
-  """.stripIndent()
+    println """
+    Pipeline execution summary
+    ---------------------------
+    Completed at : ${ANSI_GREEN}${workflow.complete}${ANSI_RESET}
+    Duration     : ${ANSI_GREEN}${workflow.duration}${ANSI_RESET}
+    Success      : ${workflow.success ? ANSI_GREEN : ANSI_RED}${workflow.success}${ANSI_RESET}
+    Results Dir  : ${ANSI_GREEN}${file(params.outdir)}${ANSI_RESET}
+    Work Dir     : ${ANSI_GREEN}${workflow.workDir}${ANSI_RESET}
+    Exit status  : ${ANSI_GREEN}${workflow.exitStatus}${ANSI_RESET}
+    Error report : ${ANSI_GREEN}${workflow.errorReport ?: '-'}${ANSI_RESET}
+    """.stripIndent()
 }
 
 def parse_mnf(mnf) {

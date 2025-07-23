@@ -7,28 +7,13 @@ include {run_qc_script} from '../modules/run_qc_script.nf'
 workflow COMPUTE_QC_METRICS {
     /*
     -----------------------------------------------------------------
-    Obtain QC Metrics
+    Compute QC Metrics
 
     The `COMPUTE_QC_METRICS` workflow is designed to compute quality
     control (QC) metrics for consensus sequences generated from 
     sequencing data. The workflow processes each sample's data to
     evaluate the quality and coverage of the generated consensus 
-    sequences. The QC metrics include the percentage of bases 
-    covered, the percentage of N bases, the longest segment without
-    N bases, and read alignment statistics (total reads aligned,
-    unmapped and mapped).
-
-    -----------------------------------------------------------------
-    # Inputs
-        A channel containing tuples of metadata and the consensus
-    FASTA file. Metadata (`meta`) must include the following keys:
-        - `id`: Unique identifier combining sample ID and taxonomic
-        ID.
-        - `taxid`: Taxonomic ID of the sample.
-        - `sample_id`: Sample identifier.
-        - `bam_file`: Sorted Bam file
-        - `ref_files`: Paths to reference genome files.
-        - `mpileup_file`: Path to output file from `samtools mpileup`
+    sequences. 
 
     -----------------------------------------------------------------
     # Key Processes
@@ -38,9 +23,6 @@ workflow COMPUTE_QC_METRICS {
         sequence.
 
     -----------------------------------------------------------------
-    # Outputs
-        - `qc_Out_ch`: A channel containing tuples with updated
-        metadata that includes computed QC metrics.
     */
 
     take:
