@@ -26,7 +26,6 @@ workflow GENERATE_CONSENSUS {
         ID.
         - `taxid`: Taxonomic ID of the sample.
         - `sample_id`: Sample identifier.
-        - `ref_files`: Paths to reference genome files.
 
     -----------------------------------------------------------------
     # Key Processes
@@ -42,26 +41,19 @@ workflow GENERATE_CONSENSUS {
     */
 
     take:
-
-        sample_taxid_ch // tuple (meta, reads)
+        sample_taxid_ch // tuple (meta, reads, ref_files)
         
     main:
-        // prepare bwa input channel
-        sample_taxid_ch
-            | map {meta, reads -> tuple(meta,reads,meta.ref_files)}
-            | set {bwa_input_ch} // tuple(meta, reads, ref_genome_paths)
-
         // align reads to reference
-        bwa_alignment_and_post_processing (bwa_input_ch)
+        bwa_alignment_and_post_processing (sample_taxid_ch)
         bams_ch = bwa_alignment_and_post_processing.out // tuple (meta, [sorted_bam, bai])
 
         // set ivar input channel
         bams_ch
-            | map {meta, bams ->
-                // store bam file on meta (check TODO)
-                def new_meta = meta.plus([bam_file : bams[0]])
-                tuple(new_meta, bams, new_meta.ref_files[0])}
-            | set {ivar_in_ch} // tuple (new_meta, bam, ref_fasta)
+            | map {meta, fastq, ref, bams ->
+                tuple(meta, bams, ref)
+            }
+            | set {ivar_in_ch} // tuple (meta, bam, ref_fasta)
 
         // generate consensus using ivar
         run_ivar(ivar_in_ch)
