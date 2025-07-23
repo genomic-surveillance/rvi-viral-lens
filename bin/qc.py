@@ -124,6 +124,7 @@ def collect_depth_stats( stats: dict, depths_file: str ):
 
     stats['percent_positions_exceeding_depth_10'] = round(100 * int(stats['positions_exceeding_depth']["10"]) / int(stats['reference_length']), 2)
     stats['bases_mapped'] = total_aligned_bases
+    stats['mean_depth_per_position'] = int(total_aligned_bases / int(stats['reference_length']))
 
 ############
 def collect_consensus_sequence_stats( stats: dict, fasta_file : str):
@@ -192,7 +193,6 @@ def parse_fasta_to_string(filepath):
 ############
 def generate_qc_file(args: argparse.ArgumentParser.parse_args):
     stats = {
-        'sample_id' : args.sample_id,
         # ivar mutation stats
         'mutations' : 0,
         'insertions': 0,
@@ -227,7 +227,6 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--outfile', required=True, type=str,
         help='''The path of the output QC summary file''')
-    parser.add_argument('--sample_id', required=True, help='Sample name.')
     parser.add_argument('--fasta_file', required=True, type=str,
         help='''The path of a consensus fasta file produced by ivar.''')
     parser.add_argument('--samtools_bam_header_file', required=True, type=str,
