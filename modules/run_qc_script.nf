@@ -59,7 +59,6 @@ process run_qc_script {
     # Run QC script
     qc.py \
         --outfile ${meta.id}.qc.json \
-        --sample_id ${meta.id} \
         --fasta_file ${fasta} \
         --samtools_depth_file ${samtools_depth} \
         --samtools_flagstat_file ${samtools_flagstat} \
