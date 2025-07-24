@@ -1,7 +1,7 @@
 
 
 process write_single_properties_json {
-    label "sample_output"
+    label "consensus_output"
 
     input:
         val(meta)
