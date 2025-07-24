@@ -102,7 +102,10 @@ workflow {
         .set{filtered_consensus_ch}
 
     // === 5 - Publish surviving consensus sequences and associated supporting files
-    publish_files_lite( filtered_consensus_ch )
+
+    publish_files_lite( 
+        filtered_consensus_ch.map{  meta, bams, fasta, variants, qc -> tuple( meta, bams, fasta ) }
+    )
 
     // === 6 - branching output from generate_consensus for viral specific subtyping
 
@@ -116,9 +119,9 @@ workflow {
 
     // 6.1 - add report info to out qc metric chanel and branch for SCOV2 subtyping
     filtered_consensus_ch 
-        .map { meta, bams, fasta, variants, qc -> tuple(meta.id, meta, bams, fasta, variants, qc)}
+        .map { meta, bams, fasta, variants, qc -> tuple(meta.id, meta, fasta )}
         .join(sample_report_with_join_key_ch)//, by: 0) // tuple (id, meta, fasta, report)
-        .map {_id, meta, bams, fasta, variants, qc, report ->
+        .map {_id, meta, fasta, report ->
             new_meta = meta.plus(report)
             tuple (new_meta, fasta) 
         }
@@ -148,16 +151,17 @@ workflow {
 
 
 //
-//
+// Since files can (currently) only be published via processes, this 
+// dummy process acts to publsh any file we like
 //
 process publish_files_lite {
-    label "sample_output"
+    label "consensus_output"
 
     input:
-        tuple val(meta), path(bams), path(consensus), path(variants), path(qc)
+        tuple val(meta), path(in_file1), path(in_file2)
 
     output:
-        tuple val(meta), path(bams), path(consensus), path(variants), path(qc)
+        tuple val(meta), path(in_file1), path(in_file2)
 
     script:
     """
