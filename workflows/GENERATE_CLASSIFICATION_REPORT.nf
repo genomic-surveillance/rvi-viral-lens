@@ -60,16 +60,10 @@ workflow GENERATE_CLASSIFICATION_REPORT {
     main:
     
         report_in_ch.map{ meta ->
-            // convert null values for type and segments to None strings
-            // if virus_subtype or flu_segment are null, set them to 'None'
-            def virus_subtype = (meta.virus_subtype == null) ? 'None' : meta.virus_subtype
-            // if flu_segment is null, set it to 'None'
-            def flu_segment = (meta.flu_segment == null) ? 'None' : meta.flu_segment
-
-            def new_meta = meta.plus(['flu_segment': flu_segment, 'virus_subtype': virus_subtype]) 
-
             //
-            // Clean up the map to restrict it to simple types that can be written into reports
+            // Clean up the map to restrict it to simple types that can be written into reports; 
+            // This shouldn't be necessary, but since the JSON dumping will fail completely if
+            // if map contains any non-simple types, better to be safe than sorry
             //
             def clean 
             clean = { value ->
@@ -84,7 +78,7 @@ workflow GENERATE_CLASSIFICATION_REPORT {
                 }
                 return null
             }
-            def cleaned = clean(new_meta)
+            def cleaned = clean(meta)
             return cleaned
         }.set{ consensus_sequence_properties_ch }
 
@@ -93,7 +87,11 @@ workflow GENERATE_CLASSIFICATION_REPORT {
         write_collated_properties_json( consensus_sequence_properties_ch.collect(), "consensus_sequence_properties" )
 
         consensus_sequence_properties_ch.map { meta ->
-            get_report_line( meta )
+            // convert any empty or null values to "None"
+            def new_meta = meta.collectEntries { key, value ->
+                [(key): (value in [null, ''] ? 'None' : value)]
+            }
+            get_report_line( new_meta )
         }.collect().set{ report_lines_ch } 
 
         // Write all of the per-sample report lines to a report file
