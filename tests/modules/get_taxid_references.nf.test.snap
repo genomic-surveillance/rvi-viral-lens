@@ -12,15 +12,16 @@
                             "9000003.fa.bwt:md5,087da0051366c9902f9f19cb6be609e4",
                             "9000003.fa.pac:md5,4f7e8e6ceb26ed7ce135f41c019ae671",
                             "9000003.fa.sa:md5,aa6aa3a9cd5ba8e4d9e63a1497643004"
-                        ]
+                        ],
+                        ">kraken:taxid|9000003|NC_002207.1 Influenza B virus -B/Lee/1940 segment 4, complete sequence"
                     ]
                 ]
             }
         ],
         "meta": {
-            "nf-test": "0.9.0",
-            "nextflow": "24.10.5"
+            "nf-test": "0.9.2",
+            "nextflow": "24.10.4"
         },
-        "timestamp": "2025-03-12T15:12:33.815616"
+        "timestamp": "2025-07-24T18:01:30.36739"
     }
 }

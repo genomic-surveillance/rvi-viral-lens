@@ -18,7 +18,7 @@
                     ]
                 ],
                 "1": [
-                    "test.9000000_pre_report.tsv:md5,fb32c46b26125db6275602638f254830"
+                    "test.9000000_pre_report.tsv:md5,b4650118fe4fccc3b649658761c454f2"
                 ],
                 "fq_files": [
                     [
@@ -36,14 +36,14 @@
                     ]
                 ],
                 "report_file": [
-                    "test.9000000_pre_report.tsv:md5,fb32c46b26125db6275602638f254830"
+                    "test.9000000_pre_report.tsv:md5,b4650118fe4fccc3b649658761c454f2"
                 ]
             }
         ],
         "meta": {
-            "nf-test": "0.8.4",
-            "nextflow": "23.10.1"
+            "nf-test": "0.9.2",
+            "nextflow": "24.10.4"
         },
-        "timestamp": "2024-09-03T16:46:52.921568"
+        "timestamp": "2025-07-24T18:02:50.990401"
     }
 }
