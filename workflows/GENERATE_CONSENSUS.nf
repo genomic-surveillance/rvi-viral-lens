@@ -56,13 +56,9 @@ workflow GENERATE_CONSENSUS {
             | set {ivar_in_ch} 
 
         run_ivar(ivar_in_ch)
-
-        run_ivar.out.map{ meta, bam, bam_idx, pileup, consensus, variants ->
-            tuple( meta, bam, bam_idx, consensus, variants )
-        }.set{ generate_consensus_out_ch}
-
+        
     emit:
-        generate_consensus_out_ch
+        run_ivar.out
 
 }
 

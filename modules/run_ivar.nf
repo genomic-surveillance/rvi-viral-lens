@@ -55,7 +55,7 @@ process run_ivar {
     tuple val(meta), path(bam), path(bam_index), path(ref_fa)
 
   output:
-    tuple val(meta), path(bam), path(bam_index), path("${meta.id}.mpileup.txt"), path("${meta.id}.consensus.fa"), path("${meta.id}.variants.tsv")
+    tuple val(meta), path(bam), path(bam_index), path("${meta.id}.consensus.fa"), path("${meta.id}.variants.tsv")
 
   script:
     mpileup_output="${meta.id}.mpileup.txt"
