@@ -26,18 +26,18 @@ workflow COMPUTE_QC_METRICS {
     */
 
     take:
-        qc_metrics_In_ch // [meta, bam, fasta_file, ivar_variants_file]
+        qc_metrics_In_ch // [meta, bam, bam_idx, fasta_file, ivar_variants_file]
 
     main:
 
         run_qc_script(qc_metrics_In_ch)
 
         run_qc_script.out
-            | map {meta, bams, consensus, variants, qc_json ->
+            | map {meta, bam, bam_idx, consensus, variants, qc_json ->
                 def json_map = new JsonSlurper().parse(new File(qc_json.toString()))
                 // create a new meta with QC metrics
                 def new_meta = meta.plus(json_map)
-                tuple(new_meta, bams, consensus, variants, qc_json) }
+                tuple(new_meta, bam, bam_idx, consensus, variants, qc_json) }
             | set {qc_out_ch}
 
     emit:

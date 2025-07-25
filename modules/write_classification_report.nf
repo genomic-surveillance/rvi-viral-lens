@@ -23,7 +23,6 @@ process write_classification_report_csv {
 
     * ---------------------------------------------------------------
     */
-    label "run_output"
    
     input:
         val(header_line)

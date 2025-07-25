@@ -40,16 +40,15 @@ process run_qc_script {
     label "qc"
 
     input:
-    tuple val(meta), path(bams), path(fasta), path(ivar_variants)
+    tuple val(meta), path(bam), path(bam_index), path(fasta), path(ivar_variants)
 
     output:
-    tuple val(meta), path(bams), path(fasta), path(ivar_variants), path("${meta.id}.qc.json")
+    tuple val(meta), path(bam), path( bam_index), path(fasta), path(ivar_variants), path("${meta.id}.qc.json")
 
     script:
     samtools_flagstat="${meta.id}.flagstat.txt"
     samtools_depth="${meta.id}.depths.txt"
     samtools_bam_header="${meta.id}.sam_header.txt"
-    bam="${bams[0]}"
     """
     # Generate required samtools flagstat file
     samtools flagstat ${bam} > ${samtools_flagstat}

@@ -1,8 +1,6 @@
 
 
 process write_single_properties_json {
-    label "consensus_output"
-
     input:
         val(meta)
 
@@ -19,18 +17,16 @@ process write_single_properties_json {
 }
 
 process write_collated_properties_json {
-    label "run_output"
-
     input:
-        val(meta)
+        val(metalist)
         val(output_filename_base)
 
     output:
-        tuple val(meta), path(output_filename)
+        path(output_filename)
 
     script:
         output_filename = "${output_filename_base}.json"
-        def metaJson = groovy.json.JsonOutput.toJson(meta)
+        def metaJson = groovy.json.JsonOutput.toJson(metalist)
         def formatted = groovy.json.JsonOutput.prettyPrint(metaJson)
     
         """

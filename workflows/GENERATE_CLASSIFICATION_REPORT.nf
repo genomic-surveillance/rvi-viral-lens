@@ -10,48 +10,22 @@ workflow GENERATE_CLASSIFICATION_REPORT {
     -----------------------------------------------------------------
     Write Classification Report
 
-    The GENERATE_CLASSIFICATION_REPORT workflow generates a 
-    classification report based on metadata associated with 
-    sequencing samples. This workflow collects metadata from each
-    sample, formats the data into a report line, and aggregates these
-    lines into a final classification report file.
+    The GENERATE_CLASSIFICATION_REPORT workflow generates some reports
+    based on metadata collected during the pipeline:
+    - A JSON properties file for each consensus sequence
+    - A collated JSON properties files for all consensus sequennce 
+    - A collated TSV "classification report" file for all consensii
 
     -----------------------------------------------------------------
     # Inputs
 
     - **Metadata Channel**: A channel containing metadata for each
-    sample. The metadata must include the following keys:
-        - `sample_id`: Unique identifier for the sample.
-        - `taxid`: Taxonomic ID of the sample.
-        - `ref_selected`: Reference sequence used for the 
-        sample, formatted with commas but replaced by pipes (`|`).
-        - `virus_name`: Name of the virus detected.
-        - `virus_subtype`: Subtype of the virus, if applicable
-        (defaults to `'None'` if `null`).
-        - `flu_segment`: Influenza segment information, if 
-        applicable (defaults to `'None'` if `null`).
-        - `percentage_genome_coverage`: Percentage of the genome
-        covered by aligned reads.
-        - `total_mapped_reads`: Number of reads that mapped 
-        successfully.
-        - `longest_no_N_segment`: Length of the longest segment
-        without ambiguous bases ('N').
-        - `percentage_of_N_bases`: Proportion of ambiguous bases
-        in the consensus sequence.
+    sample. 
 
-    -----------------------------------------------------------------
-    # Key Processes:
-        - **Report Line Generation**: Each sample's metadata is
-        processed to generate a line of text summarizing the
-        classification data.
-        - **Report Aggregation**: All report lines are aggregated
-        into a single report file.
-
-    -----------------------------------------------------------------
     # Outputs
-        - Classification Report Channel: A text file containing
-        aggregated classification data for all samples, formatted as
-        a CSV.
+        - Per-consensus properties.json file channel
+        - Collated properties.json file channel
+        - Classification report CSV channel (see code below for columns)
     */
 
     take:
@@ -80,13 +54,14 @@ workflow GENERATE_CLASSIFICATION_REPORT {
             }
             def cleaned = clean(meta)
             return cleaned
-        }.set{ consensus_sequence_properties_ch }
+        }.set{ consensus_meta_ch }
 
         // write individual JSONs, and a collated JSON
-        write_single_properties_json( consensus_sequence_properties_ch )
-        write_collated_properties_json( consensus_sequence_properties_ch.collect(), "consensus_sequence_properties" )
+        consensus_properties_ch = write_single_properties_json( consensus_meta_ch )
+ 
+        collated_properties_ch = write_collated_properties_json( consensus_meta_ch.collect(), "consensus_sequence_properties" )
 
-        consensus_sequence_properties_ch.map { meta ->
+        consensus_meta_ch.map { meta ->
             // convert any empty or null values to "None"
             def new_meta = meta.collectEntries { key, value ->
                 [(key): (value in [null, ''] ? 'None' : value)]
@@ -95,10 +70,16 @@ workflow GENERATE_CLASSIFICATION_REPORT {
         }.collect().set{ report_lines_ch } 
 
         // Write all of the per-sample report lines to a report file
-        write_classification_report_csv( get_header_line(), report_lines_ch , "classification_report" )
+        classification_report_ch = write_classification_report_csv( 
+            get_header_line(), 
+            report_lines_ch , 
+            "classification_report" 
+        )
 
     emit:
-        write_classification_report_csv.out // report file
+        consensus_properties_ch
+        collated_properties_ch
+        classification_report_ch 
 /*
 ---------------------------------------------------------------------
 # Example Manifest File

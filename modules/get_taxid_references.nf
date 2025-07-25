@@ -43,7 +43,7 @@ process get_taxid_reference_files{
         val(taxid)
         val(kraken_db_library_path)
     output:
-        tuple val(taxid), path("${taxid}.fa*"), stdout, optional : true
+        tuple val(taxid), path("${taxid}.fa"), path("${taxid}.fa.*"), stdout, optional : true
 
     script:
 $/

@@ -52,13 +52,12 @@ process run_ivar {
   label "ivar"
 
   input:
-    tuple val(meta), path(bams), path(reference_fasta)
+    tuple val(meta), path(bam), path(bam_index), path(ref_fa)
 
   output:
-    tuple val(meta), path(bams), path("${meta.id}.consensus.fa"), path("${meta.id}_mutations.tsv")
+    tuple val(meta), path(bam), path(bam_index), path("${meta.id}.mpileup.txt"), path("${meta.id}.consensus.fa"), path("${meta.id}.variants.tsv")
 
   script:
-    sorted_bam = "${meta.id}.sorted.bam"
     mpileup_output="${meta.id}.mpileup.txt"
     flagstat_output="${meta.id}.flagstat.txt"
     depth_output="${meta.id}.depths.txt"
@@ -67,9 +66,9 @@ process run_ivar {
     set -e
     set -o pipefail
 
-    samtools mpileup -aa -A -B -d 0 -Q0 ${sorted_bam} > ${mpileup_output}
+    samtools mpileup -aa -A -B -d 0 -Q0 ${bam} > ${mpileup_output}
     cat ${mpileup_output} | ivar consensus -t ${params.ivar_freq_threshold} -m ${params.ivar_min_depth} -n N -p ${meta.id}.consensus
-    cat ${mpileup_output} | ivar variants -t ${params.ivar_freq_threshold} -q ${params.ivar_min_quality_threshold} -r ${reference_fasta} -p ${meta.id}_mutations
+    cat ${mpileup_output} | ivar variants -t ${params.ivar_freq_threshold} -q ${params.ivar_min_quality_threshold} -r ${ref_fa} -p ${meta.id}.variants
     """
 }
 

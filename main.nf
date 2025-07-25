@@ -16,7 +16,7 @@ include {COMPUTE_QC_METRICS} from './workflows/COMPUTE_QC_METRICS.nf'
 include {SCOV2_SUBTYPING} from './workflows/SCOV2_SUBTYPING.nf'
 include {GENERATE_CLASSIFICATION_REPORT} from './workflows/GENERATE_CLASSIFICATION_REPORT.nf'
 
-
+include {publish_consensus_files; publish_run_files} from './modules/publish_lite.nf'
 
 // Main entry-point workflow
 workflow {
@@ -101,13 +101,8 @@ workflow {
         .filter{  it -> (it[0].longest_non_n_subsequence > 0) }
         .set{filtered_consensus_ch}
 
-    // === 5 - Publish surviving consensus sequences and associated supporting files
-
-    publish_files_lite( 
-        filtered_consensus_ch.map{  meta, bams, fasta, variants, qc -> tuple( meta, bams, fasta ) }
-    )
-
-    // === 6 - branching output from generate_consensus for viral specific subtyping
+ 
+    // === 5 - branching output from generate_consensus for viral specific subtyping
 
     // construct id for the report channel 
     SORT_READS_BY_REF.out.sample_pre_report_ch
@@ -117,10 +112,10 @@ workflow {
         }
         .set{sample_report_with_join_key_ch}
 
-    // 6.1 - add report info to out qc metric chanel and branch for SCOV2 subtyping
+    // 5.1 - add report info to out qc metric chanel and branch for SCOV2 subtyping
     filtered_consensus_ch 
-        .map { meta, bams, fasta, variants, qc -> tuple(meta.id, meta, fasta )}
-        .join(sample_report_with_join_key_ch)//, by: 0) // tuple (id, meta, fasta, report)
+        .map { meta, bam, bam_idx, consensus, variants, qc -> tuple(meta.id, meta, consensus )}
+        .join(sample_report_with_join_key_ch)
         .map {_id, meta, fasta, report ->
             new_meta = meta.plus(report)
             tuple (new_meta, fasta) 
@@ -131,13 +126,13 @@ workflow {
         }
         .set {filtered_consensus_by_type_ch}
       
-    // 6.2 - do SCOV2 subtyping
+    // 5.2 - do SCOV2 subtyping
     if (params.do_scov2_subtyping == true){
         SCOV2_SUBTYPING(filtered_consensus_by_type_ch.scv2_subtyping_workflow_in_ch)
         SCOV2_SUBTYPING.out.set{scov2_subtyped_ch}
     }
 
-    // === 7 - write final classification reports
+    // === 6 - write final classification reports
 
     if (!params.do_scov2_subtyping == true){
         scov2_subtyped_ch = Channel.empty()
@@ -147,25 +142,21 @@ workflow {
         .set{report_in_ch}
 
     GENERATE_CLASSIFICATION_REPORT(report_in_ch)
-}
 
+    // === 7 - Finally, publish formal outputs of the pipeline
 
-//
-// Since files can (currently) only be published via processes, this 
-// dummy process acts to publsh any file we like
-//
-process publish_files_lite {
-    label "consensus_output"
+    publish_consensus_files (
+        // only publish consensus sequence, bams and properties; qc and variants file considered
+        // intermediate outputs 
+        filtered_consensus_ch
+            .map{  meta, bam, bam_idx, fasta, variants, qc -> tuple( meta, [bam, bam_idx, fasta] ) }
+            .mix( GENERATE_CLASSIFICATION_REPORT.out.consensus_properties_ch )
+    )
+    publish_run_files(
+        GENERATE_CLASSIFICATION_REPORT.out.collated_properties_ch
+            .mix(GENERATE_CLASSIFICATION_REPORT.out.classification_report_ch)
+    )
 
-    input:
-        tuple val(meta), path(in_file1), path(in_file2)
-
-    output:
-        tuple val(meta), path(in_file1), path(in_file2)
-
-    script:
-    """
-    """
 }
 
 def __check_if_params_file_exist(param_name, param_value){

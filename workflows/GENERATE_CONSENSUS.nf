@@ -46,20 +46,23 @@ workflow GENERATE_CONSENSUS {
     main:
         // align reads to reference
         bwa_alignment_and_post_processing (sample_taxid_ch)
-        bams_ch = bwa_alignment_and_post_processing.out // tuple (meta, [sorted_bam, bai])
+        bams_ch = bwa_alignment_and_post_processing.out 
 
         // set ivar input channel
         bams_ch
-            | map {meta, fastq, ref, bams ->
-                tuple(meta, bams, ref)
+            | map {meta, fastq, ref_fa, ref_indices, bam, bam_idx ->
+                tuple(meta, bam, bam_idx, ref_fa)
             }
-            | set {ivar_in_ch} // tuple (meta, bam, ref_fasta)
+            | set {ivar_in_ch} 
 
-        // generate consensus using ivar
         run_ivar(ivar_in_ch)
-        
+
+        run_ivar.out.map{ meta, bam, bam_idx, pileup, consensus, variants ->
+            tuple( meta, bam, bam_idx, consensus, variants )
+        }.set{ generate_consensus_out_ch}
+
     emit:
-        run_ivar.out // tuple (meta, bams, consensus_fasta_file, variants_file)
+        generate_consensus_out_ch
 
 }
 
