@@ -9,10 +9,8 @@
                             "taxid": 9000000,
                             "sample_id": "test2"
                         },
-                        [
-                            "test2.9000000.sorted.bam:md5,889f09bfe09b2d0d98c51fbbfd57dd3a",
-                            "test2.9000000.sorted.bam.bai:md5,3246b03eab5b39f491e9159c2d5c583b"
-                        ],
+                        "test2.9000000.sorted.bam:md5,889f09bfe09b2d0d98c51fbbfd57dd3a",
+                        "test2.9000000.sorted.bam.bai:md5,3246b03eab5b39f491e9159c2d5c583b",
                         "test2.9000000.consensus.fa:md5,8fa86ad0980cad63ea403c60ac2a3fb3",
                         "test2.9000000_mutations.tsv:md5,198953637bf70dd0b485b907a58e5eae",
                         "test2.9000000.qc.json:md5,7d265d1aecd0a154477107a5fcae6b55"
@@ -24,6 +22,6 @@
             "nf-test": "0.9.2",
             "nextflow": "24.10.4"
         },
-        "timestamp": "2025-07-24T18:23:25.026131"
+        "timestamp": "2025-07-28T10:41:49.107051"
     }
 }

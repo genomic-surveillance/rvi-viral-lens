@@ -23,10 +23,8 @@ nextflow_process {
                 // define inputs of the process here. Example:
                 input[0]=tuple(
                     params.meta,
-                    [
-                        file("${projectDir}/tests/test_data/test_alignments/test2.9000000.sorted.bam"),
-                        file("${projectDir}/tests/test_data/test_alignments/test2.9000000.sorted.bam.bai"),
-                    ],
+                    file("${projectDir}/tests/test_data/test_alignments/test2.9000000.sorted.bam"),
+                    file("${projectDir}/tests/test_data/test_alignments/test2.9000000.sorted.bam.bai"),
                     file("${projectDir}/tests/test_data/test_consensuses/test2.9000000.consensus.fa"),
                     file("${projectDir}/tests/test_data/test_ivar_variants_out/test2.9000000_mutations.tsv")
                     )
