@@ -94,9 +94,8 @@ workflow {
 
     // === 4 - Compute QC metrics ==
     COMPUTE_QC_METRICS(GENERATE_CONSENSUS.out)
-    // Remove entries from output channel correponding to consensus sequences that are 100% N,
-    // and use a lightweight process to publish the survivors
-    //
+
+    // Remove entries from output channel correponding to consensus sequences that are 100% N
     COMPUTE_QC_METRICS.out
         .filter{  it -> (it[0].longest_non_n_subsequence > 0) }
         .set{filtered_consensus_ch}
@@ -104,7 +103,6 @@ workflow {
  
     // === 5 - branching output from generate_consensus for viral specific subtyping
 
-    // construct id for the report channel 
     SORT_READS_BY_REF.out.sample_pre_report_ch
         .map{ it -> 
             def id="${it.sample_id}.${it.selected_taxid}"
@@ -156,7 +154,6 @@ workflow {
         GENERATE_CLASSIFICATION_REPORT.out.collated_properties_ch
             .mix(GENERATE_CLASSIFICATION_REPORT.out.classification_report_ch)
     )
-
 }
 
 def __check_if_params_file_exist(param_name, param_value){

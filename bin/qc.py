@@ -7,7 +7,10 @@ import argparse
 
 ############
 def collect_bam_header_stats(stats:dict, bam_header_file:str):
-
+    """
+    Parses the LN attribute from the SQ line of the BAM header
+    in order to obtain a value for the reference_length property
+    """
     seq_len = 0    
     with open(bam_header_file, 'r') as f:
         for line in f:
@@ -19,7 +22,11 @@ def collect_bam_header_stats(stats:dict, bam_header_file:str):
 
 ############
 def collect_mutation_stats(stats:dict, ivar_variants_file:str):
-    # Format of ivar variants file documented here: https://andersen-lab.github.io/ivar/html/manualpage.html
+    """
+    Obtains a collection of properties (counts of SNPs, indels etc)
+    from the variants file produced by 'ivar variants' file. 
+    Format of ivar variants file documented here: https://andersen-lab.github.io/ivar/html/manualpage.html
+    """
 
     # Define transition pairs
     transitions = {
@@ -74,25 +81,27 @@ def collect_mutation_stats(stats:dict, ivar_variants_file:str):
 
 ############ 
 def collect_read_stats( stats: dict, flagstat_file: str):
-    # Example of samtools flagstat output:
-    #
-    # 6326 + 0 in total (QC-passed reads + QC-failed reads)
-    # 5772 + 0 primary
-    # 0 + 0 secondary
-    # 554 + 0 supplementary
-    # 0 + 0 duplicates
-    # 0 + 0 primary duplicates
-    # 6326 + 0 mapped (100.00% : N/A)
-    # 5772 + 0 primary mapped (100.00% : N/A)
-    # 5772 + 0 paired in sequencing
-    # 2886 + 0 read1
-    # 2886 + 0 read2
-    # 5460 + 0 properly paired (94.59% : N/A)
-    # 5772 + 0 with itself and mate mapped
-    # 0 + 0 singletons (0.00% : N/A)
-    # 0 + 0 with mate mapped to a different chr
-    # 0 + 0 with mate mapped to a different chr (mapQ>=5)
-
+    """
+    Parses read and base counts from the samtools flagstat file. 
+    Example of samtools flagstat output:
+    
+    6326 + 0 in total (QC-passed reads + QC-failed reads)
+    5772 + 0 primary
+    0 + 0 secondary
+    554 + 0 supplementary
+    0 + 0 duplicates
+    0 + 0 primary duplicates
+    6326 + 0 mapped (100.00% : N/A)
+    5772 + 0 primary mapped (100.00% : N/A)
+    5772 + 0 paired in sequencing
+    2886 + 0 read1
+    2886 + 0 read2
+    5460 + 0 properly paired (94.59% : N/A)
+    5772 + 0 with itself and mate mapped
+    0 + 0 singletons (0.00% : N/A)
+    0 + 0 with mate mapped to a different chr
+    0 + 0 with mate mapped to a different chr (mapQ>=5)
+    """
     with open(flagstat_file) as flagstat_reader:
         flagstat_values = [line.split(" ")[0] for line in flagstat_reader.readlines()]
 
@@ -105,9 +114,11 @@ def collect_read_stats( stats: dict, flagstat_file: str):
 
 ############
 def collect_depth_stats( stats: dict, depths_file: str ):
-    #
-    # Samtools depth output: <sequence name>  <position>  <coverage>
-    #
+    """
+    Parses and calculates a collection of properties using
+    data from the output of 'samtools depth'. 
+    Format of aamtools depth output: <sequence name>  <position>  <coverage>
+    """
     total_aligned_bases = 0
     positions_exceeding_min_depth = 0
     for i in range(0, 101, 5):
@@ -128,6 +139,9 @@ def collect_depth_stats( stats: dict, depths_file: str ):
 
 ############
 def collect_consensus_sequence_stats( stats: dict, fasta_file : str):
+    """
+    Obtains metrics from the consensus sequence itself
+    """
     pct_non_N_bases = 0
     longest_non_N_stretch = 0
 
@@ -179,6 +193,9 @@ def get_longest_non_n_stretch(seq : str) -> int:
 
 ############
 def parse_fasta_to_string(filepath):
+    """
+    Parses a single-entry fasta file into a string
+    """
     sequence = []
 
     with open(filepath, 'r') as f:
