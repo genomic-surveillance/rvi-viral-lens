@@ -112,7 +112,7 @@ workflow {
 
     // 5.1 - add report info to out qc metric chanel and branch for SCOV2 subtyping
     filtered_consensus_ch 
-        .map { meta, bam, bam_idx, consensus, variants, qc -> tuple(meta.id, meta, consensus )}
+        .map { meta, _bam, _bam_idx, consensus, _variants, _qc -> tuple(meta.id, meta, consensus )}
         .join(sample_report_with_join_key_ch)
         .map {_id, meta, fasta, report ->
             def new_meta = meta.plus(report)
