@@ -1,7 +1,5 @@
 // Copyright (C) 2023 Genome Surveillance Unit/Genome Research Ltd.
 
-import groovy.json.JsonSlurper
-
 include {bwa_alignment_and_post_processing} from '../modules/bwa_alignment.nf'
 include {run_ivar} from '../modules/run_ivar.nf'
 

@@ -1,7 +1,5 @@
 // Copyright (C) 2023 Genome Surveillance Unit/Genome Research Ltd.
 
-import groovy.json.JsonSlurper
-
 include {run_qc_script} from '../modules/run_qc_script.nf'
 
 workflow COMPUTE_QC_METRICS {
@@ -34,7 +32,7 @@ workflow COMPUTE_QC_METRICS {
 
         run_qc_script.out
             | map {meta, bam, bam_idx, consensus, variants, qc_json ->
-                def json_map = new JsonSlurper().parse(new File(qc_json.toString()))
+                def json_map = new groovy.json.JsonSlurper().parse(new File(qc_json.toString()))
                 // create a new meta with QC metrics
                 def new_meta = meta.plus(json_map)
                 tuple(new_meta, bam, bam_idx, consensus, variants, qc_json) }
