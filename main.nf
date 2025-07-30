@@ -147,7 +147,7 @@ workflow {
         // only publish consensus sequence, bams and properties; qc and variants file considered
         // intermediate outputs 
         filtered_consensus_ch
-            .map{  meta, bam, bam_idx, fasta, variants, qc -> tuple( meta, [bam, bam_idx, fasta] ) }
+            .map{  meta, bam, bam_idx, fasta, _variants, _qc -> tuple( meta, [bam, bam_idx, fasta] ) }
             .mix( GENERATE_CLASSIFICATION_REPORT.out.consensus_properties_ch )
     )
     publish_run_files(
