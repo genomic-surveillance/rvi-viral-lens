@@ -59,9 +59,6 @@ process run_ivar {
 
   script:
     mpileup_output="${meta.id}.mpileup.txt"
-    flagstat_output="${meta.id}.flagstat.txt"
-    depth_output="${meta.id}.depths.txt"
-    sam_header_output="${meta.id}.sam_header.txt"
     """
     set -e
     set -o pipefail
