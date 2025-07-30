@@ -20,7 +20,6 @@ include {publish_consensus_files; publish_run_files} from './modules/publish_lit
 
 // Main entry-point workflow
 workflow {
-
   /*
   * ANSI escape codes to color output messages
   */
@@ -154,6 +153,29 @@ workflow {
         GENERATE_CLASSIFICATION_REPORT.out.collated_properties_ch
             .mix(GENERATE_CLASSIFICATION_REPORT.out.classification_report_ch)
     )
+
+    workflow.onComplete = {
+        // Log colors ANSI codes
+        /*
+        * ANSI escape codes to color output messages
+        */
+        def ANSI_GREEN = "\033[1;32m"
+        def ANSI_RED = "\033[1;31m"
+        def ANSI_RESET = "\033[0m"
+ 
+        println """
+        Pipeline execution summary
+        ---------------------------
+        Completed at : ${ANSI_GREEN}${workflow.complete}${ANSI_RESET}
+        Duration     : ${ANSI_GREEN}${workflow.duration}${ANSI_RESET}
+        Success      : ${workflow.success ? ANSI_GREEN : ANSI_RED}${workflow.success}${ANSI_RESET}
+        Results Dir  : ${ANSI_GREEN}${file(params.outdir)}${ANSI_RESET}
+        Work Dir     : ${ANSI_GREEN}${workflow.workDir}${ANSI_RESET}
+        Exit status  : ${ANSI_GREEN}${workflow.exitStatus}${ANSI_RESET}
+        Error report : ${ANSI_GREEN}${workflow.errorReport ?: '-'}${ANSI_RESET}
+        """.stripIndent()
+    }
+
 }
 
 def __check_if_params_file_exist(param_name, param_value){
@@ -190,27 +212,6 @@ def check_main_params(){
  *
  * https://www.nextflow.io/docs/latest/metadata.html
  */
-workflow.onComplete {
-    // Log colors ANSI codes
-    /*
-    * ANSI escape codes to color output messages
-    */
-    def ANSI_GREEN = "\033[1;32m"
-    def ANSI_RED = "\033[1;31m"
-    def ANSI_RESET = "\033[0m"
- 
-    println """
-    Pipeline execution summary
-    ---------------------------
-    Completed at : ${ANSI_GREEN}${workflow.complete}${ANSI_RESET}
-    Duration     : ${ANSI_GREEN}${workflow.duration}${ANSI_RESET}
-    Success      : ${workflow.success ? ANSI_GREEN : ANSI_RED}${workflow.success}${ANSI_RESET}
-    Results Dir  : ${ANSI_GREEN}${file(params.outdir)}${ANSI_RESET}
-    Work Dir     : ${ANSI_GREEN}${workflow.workDir}${ANSI_RESET}
-    Exit status  : ${ANSI_GREEN}${workflow.exitStatus}${ANSI_RESET}
-    Error report : ${ANSI_GREEN}${workflow.errorReport ?: '-'}${ANSI_RESET}
-    """.stripIndent()
-}
 
 def parse_mnf(mnf) {
     /*
