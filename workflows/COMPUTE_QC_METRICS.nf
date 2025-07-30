@@ -41,7 +41,7 @@ workflow COMPUTE_QC_METRICS {
             | set {qc_out_ch}
 
     emit:
-        qc_out_ch // (meta, bams, fasta, variants)
+        qc_out_ch // (meta, bam, bam_idx, consensus, variants, qc_json)
 }
 
 workflow {
