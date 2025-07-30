@@ -115,7 +115,7 @@ workflow {
         .map { meta, bam, bam_idx, consensus, variants, qc -> tuple(meta.id, meta, consensus )}
         .join(sample_report_with_join_key_ch)
         .map {_id, meta, fasta, report ->
-            new_meta = meta.plus(report)
+            def new_meta = meta.plus(report)
             tuple (new_meta, fasta) 
         }
         .branch{ it ->
