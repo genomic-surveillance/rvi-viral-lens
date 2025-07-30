@@ -176,10 +176,20 @@ workflow SORT_READS_BY_REF {
 
         // 4 - run kraken2ref and collect all per-sample per-taxon fq filepairs
 
-        sample_pre_report_ch = run_k2r_dump_fastqs_and_pre_report.out.report_file
+        raw_sample_pre_report_ch = run_k2r_dump_fastqs_and_pre_report.out.report_file
+
+        // 4.1 - remove empty pre_report files
+        raw_sample_pre_report_ch
+            .filter{it -> (it.size() > 1)} // remove empty pre_reports
+            .splitCsv(header: true, sep:"\t")
+            .set{sample_pre_report_ch}
+
+        // raise warning for sample taxids which had empty pre_reports
+        raw_sample_pre_report_ch
+            .filter{it -> (it.size() <= 1)}
+            .view{it -> log.warn("Excluding ${it} as input due to small size ( < 1 byte)")}
 
         // prepare channel to be emitted
-
         per_taxid_fqs_Ch 
             | map {_meta, reads ->
                 // group pairs of fastqs based on file names, and add new info to meta
@@ -210,23 +220,21 @@ workflow SORT_READS_BY_REF {
             .set {unq_taxid_ch}
 
         get_taxid_reference_files(unq_taxid_ch, library_fa_path)
-        get_taxid_reference_files.out// tuple (taxid, [ref_files])
-            .set{taxid_ref_files_map_ch}
+        get_taxid_reference_files.out.set{taxid_ref_files_map_ch}
         
-        // add reference files to meta
         pre_sample_taxid_ch
             | map {meta, reads ->
                 tuple(meta.taxid, meta, reads)
             }
-            | combine(taxid_ref_files_map_ch, by:0) // [taxid, meta, reads, ref_files]
-            | map {_taxid, meta, reads, ref_files ->
-                def new_meta = meta.plus([ref_files: ref_files]) // add reference files to meta
-                tuple(new_meta, reads)
+            | combine(taxid_ref_files_map_ch, by:0) // [taxid, meta, reads, ref_files, ref_header]
+            | map {_taxid, meta, reads, ref_fa, ref_indexes, ref_header ->
+                def new_meta = meta.plus([reference_header: ref_header]) 
+                tuple(new_meta, reads, ref_fa, ref_indexes)
             }
             | set {sample_taxid_ch}
     
     emit:
-        sample_taxid_ch // tuple (meta, reads)
+        sample_taxid_ch // tuple (meta, reads, ref_files)
         sample_pre_report_ch // pre_report
 
 }

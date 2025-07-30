@@ -142,10 +142,6 @@
       "type": "string",
       "default": "./results"
     },
-    "min_coverage_percent": {
-      "type": "integer",
-      "default": 10
-    },
     "developer_publish": {
       "type": "boolean"
     }

@@ -128,8 +128,8 @@ def get_report(in_file, report_file, out_suffix=".viral_pipe.report.tsv"):
         ## if selected_ref is ANY flu segment, collect its subtype info
         ## THIS IS THE SUBTYPE OF THE CHOSEN REFERENCE ONLY
         ## THIS MAY NOT BE THE SAME AS THE SUBTYOE OF THE SAMPLE ITSELF
-        subtype = "None"
-        segment = "None"
+        subtype = None
+        segment = None
         generic_subtype = None
 
         # if flu B, get segment number, but not subtype

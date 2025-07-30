@@ -26,7 +26,8 @@ nextflow_process {
                         file("${params.test_loc}/test_input_fastqs/test_1.fastq.gz"),
                         file("${params.test_loc}/test_input_fastqs/test_2.fastq.gz")
                     ],
-                    file("${params.test_loc}/test_references/*")
+                    file("${params.test_loc}/test_references/9000000.fa"),
+                    file("${params.test_loc}/test_references/9000000.fa.*")
                     )
                 """
             }

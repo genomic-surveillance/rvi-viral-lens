@@ -49,9 +49,9 @@ workflow SCOV2_SUBTYPING {
 
     -----------------------------------------------------------------
     # Outputs
-    - **SCOV2 Subtype Channel**: A channel emitting updated metadata
-    for each sample, now including the assigned SARS-CoV-2 lineage
-    (virus subtype).
+    - **SCOV2 Subtype Channel**: A channel emitting a tuple with updated 
+    metadata for each sample, now including the assigned SARS-CoV-2 lineage
+    (virus subtype), and the consensus sequence (propagated from input)
 
     */
 
@@ -66,10 +66,10 @@ workflow SCOV2_SUBTYPING {
             .map { meta, consensus_seq, lineage -> 
                 // create a new meta with lineage information
                 def new_meta = meta.plus(virus_subtype: lineage)
-                tuple(new_meta)
+                tuple(new_meta, consensus_seq)
             }
             .set {scov2_subtype_out_ch}
 
     emit:
-        scov2_subtype_out_ch // tuple (meta)
+        scov2_subtype_out_ch // tuple (meta, consensus_seq)
 }

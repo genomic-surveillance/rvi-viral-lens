@@ -12,15 +12,14 @@ include { validateParameters; paramsSummaryLog} from 'plugin/nf-schema'
 
 include {SORT_READS_BY_REF} from './workflows/SORT_READS_BY_REF.nf'
 include {GENERATE_CONSENSUS} from './workflows/GENERATE_CONSENSUS.nf'
-include {SCOV2_SUBTYPING} from './workflows/SCOV2_SUBTYPING.nf'
 include {COMPUTE_QC_METRICS} from './workflows/COMPUTE_QC_METRICS.nf'
+include {SCOV2_SUBTYPING} from './workflows/SCOV2_SUBTYPING.nf'
 include {GENERATE_CLASSIFICATION_REPORT} from './workflows/GENERATE_CLASSIFICATION_REPORT.nf'
 
-
+include {publish_consensus_files; publish_run_files} from './modules/publish_lite.nf'
 
 // Main entry-point workflow
 workflow {
-
   /*
   * ANSI escape codes to color output messages
   */
@@ -53,9 +52,6 @@ workflow {
     --ivar_min_depth           : ${params.ivar_min_depth}
     --ivar_freq_threshold      : ${params.ivar_freq_threshold}
 
-  --> GENERATE_CLASSIFICATION_REPORT workflow parameters:
-    --min_coverage_percent     : ${params.min_coverage_percent}
-
   --> viral subtyping branching parameters:
     --scv2_keyword             : ${params.scv2_keyword}
 
@@ -78,11 +74,10 @@ workflow {
   ------------------------------------------
 """.stripIndent()
 
-  // Validate input parameters
-  validateParameters()
-  // Print summary of supplied parameters
-  log.info paramsSummaryLog(workflow)
-
+    // Validate input parameters
+    validateParameters()
+    // Print summary of supplied parameters
+    log.info paramsSummaryLog(workflow)
 
     // === 1 - Process input ===
     check_main_params()
@@ -92,85 +87,113 @@ workflow {
     // ==========================
     // === 2 - Map reads to taxid
     SORT_READS_BY_REF(reads_ch)
-    sample_taxid_ch = SORT_READS_BY_REF.out.sample_taxid_ch // tuple (meta, reads)
-    sample_pre_report_ch = SORT_READS_BY_REF.out.sample_pre_report_ch
-
+ 
     // === 3 - Generate consensus ==
-    GENERATE_CONSENSUS(sample_taxid_ch)
+    GENERATE_CONSENSUS( SORT_READS_BY_REF.out.sample_taxid_ch )
 
-    // === 4 - Compute QC Metrics
+    // === 4 - Compute QC metrics ==
     COMPUTE_QC_METRICS(GENERATE_CONSENSUS.out)
 
-    // === 5 - branching output from QC for viral specific subtyping
+    // Remove entries from output channel correponding to consensus sequences that are 100% N
+    COMPUTE_QC_METRICS.out
+        .filter{  it -> (it[0].longest_non_n_subsequence > 0) }
+        .set{filtered_consensus_ch}
 
-    // 5.1 - process pre_report files
-    // NOTE: if the consensus_gen entry point is removed,
-    //           this processing should be moved back to 
-    //           SORT_READS_BY_REF workflow
-    sample_pre_report_ch
-      .filter{it -> (it.size() > 1)} // remove empty pre_reports
-      .splitCsv(header: true, sep:"\t")
-      .map{it -> 
-        def id="${it.sample_id}.${it.selected_taxid}"
-        tuple(id, it)
-      }
-      .set{sample_report_ch}
+ 
+    // === 5 - branching output from generate_consensus for viral specific subtyping
 
-    // raise warning for sample taxids which had empty pre_reports
-    sample_pre_report_ch
-      .filter{it -> (it.size() <= 1)}
-      .view{it -> log.warn("Excluding ${it} as input due to small size ( < 1 byte)")}
+    SORT_READS_BY_REF.out.sample_pre_report_ch
+        .map{ it -> 
+            def id="${it.sample_id}.${it.selected_taxid}"
+            tuple(id, it)
+        }
+        .set{sample_report_with_join_key_ch}
 
-    // 5.2 - add report info to out qc metric chanel and branch for SCOV2 subtyping
-    COMPUTE_QC_METRICS.out // tuple (meta, bam)
-      .map { meta, bam -> tuple(meta.id, meta, bam)}
-      .join(sample_report_ch)//, by: 0) // tuple (id, meta, bam, report)
-      .map {_id, meta, bam, report ->
-        meta.putAll(report)
-        tuple(meta, bam)
-      }
-      .branch{ it ->
-        scv2_subtyping_workflow_in_ch: it[0].ref_selected.contains("${params.scv2_keyword}")
-        no_subtyping_ch: true
-      }
-      .set {qc_metrics_out_ch}
-
-    // 5.3 - do SCOV2 subtyping
+    // 5.1 - add report info to out qc metric chanel and branch for SCOV2 subtyping
+    filtered_consensus_ch 
+        .map { meta, _bam, _bam_idx, consensus, _variants, _qc -> tuple(meta.id, meta, consensus )}
+        .join(sample_report_with_join_key_ch)
+        .map {_id, meta, fasta, report ->
+            def new_meta = meta.plus(report)
+            tuple (new_meta, fasta) 
+        }
+        .branch{ it ->
+            scv2_subtyping_workflow_in_ch: it[0].ref_selected.contains("${params.scv2_keyword}")
+            no_subtyping_ch: true
+        }
+        .set {filtered_consensus_by_type_ch}
+      
+    // 5.2 - do SCOV2 subtyping
     if (params.do_scov2_subtyping == true){
-      qc_metrics_out_ch.scv2_subtyping_workflow_in_ch
-        .map {it -> tuple(it[0], it[0].consensus_fa)}
-        .set {scov_2_subt_In_ch}
-      SCOV2_SUBTYPING(scov_2_subt_In_ch)
-      SCOV2_SUBTYPING.out.set{scov2_subtyped_ch}
+        SCOV2_SUBTYPING(filtered_consensus_by_type_ch.scv2_subtyping_workflow_in_ch)
+        SCOV2_SUBTYPING.out.set{scov2_subtyped_ch}
     }
 
-  // === 6 - write final classification report
+    // === 6 - write final classification reports
 
-  if (!params.do_scov2_subtyping == true){
-    scov2_subtyped_ch = Channel.empty()
-  }
-  qc_metrics_out_ch.no_subtyping_ch.concat(scov2_subtyped_ch)
-    .set{report_in_ch}
+    if (!params.do_scov2_subtyping == true){
+        scov2_subtyped_ch = Channel.empty()
+    }
+    filtered_consensus_by_type_ch.no_subtyping_ch.concat(scov2_subtyped_ch)
+        .map{ meta, fasta ->  meta } 
+        .set{report_in_ch}
 
-  GENERATE_CLASSIFICATION_REPORT(report_in_ch)
+    GENERATE_CLASSIFICATION_REPORT(report_in_ch)
+
+    // === 7 - Finally, publish formal outputs of the pipeline
+
+    publish_consensus_files (
+        // only publish consensus sequence, bams and properties; qc and variants file considered
+        // intermediate outputs 
+        filtered_consensus_ch
+            .map{  meta, bam, bam_idx, fasta, _variants, _qc -> tuple( meta, [bam, bam_idx, fasta] ) }
+            .mix( GENERATE_CLASSIFICATION_REPORT.out.consensus_properties_ch )
+    )
+    publish_run_files(
+        GENERATE_CLASSIFICATION_REPORT.out.collated_properties_ch
+            .mix(GENERATE_CLASSIFICATION_REPORT.out.classification_report_ch)
+    )
+
+    workflow.onComplete = {
+        // Log colors ANSI codes
+        /*
+        * ANSI escape codes to color output messages
+        */
+        def ANSI_GREEN = "\033[1;32m"
+        def ANSI_RED = "\033[1;31m"
+        def ANSI_RESET = "\033[0m"
+ 
+        println """
+        Pipeline execution summary
+        ---------------------------
+        Completed at : ${ANSI_GREEN}${workflow.complete}${ANSI_RESET}
+        Duration     : ${ANSI_GREEN}${workflow.duration}${ANSI_RESET}
+        Success      : ${workflow.success ? ANSI_GREEN : ANSI_RED}${workflow.success}${ANSI_RESET}
+        Results Dir  : ${ANSI_GREEN}${file(params.outdir)}${ANSI_RESET}
+        Work Dir     : ${ANSI_GREEN}${workflow.workDir}${ANSI_RESET}
+        Exit status  : ${ANSI_GREEN}${workflow.exitStatus}${ANSI_RESET}
+        Error report : ${ANSI_GREEN}${workflow.errorReport ?: '-'}${ANSI_RESET}
+        """.stripIndent()
+    }
+
 }
 
 def __check_if_params_file_exist(param_name, param_value){
-  def error = 0
+    def error = 0
 
-  if (!(param_value==null)){
-    def param_file = file(param_value)
-    if (!param_file.exists()){
-      log.error("${param_file} does not exist")
-      error +=1
+    if (!(param_value==null)){
+        def param_file = file(param_value)
+        if (!param_file.exists()){
+            log.error("${param_file} does not exist")
+            error +=1
+        }
     }
-  }
 
-  if (param_value==null){
-    log.error("${param_name} must be provided")
-    error +=1
-  }
-  return error
+    if (param_value==null){
+        log.error("${param_name} must be provided")
+        error +=1
+    }
+    return error
 }
 
 def check_main_params(){
@@ -189,27 +212,6 @@ def check_main_params(){
  *
  * https://www.nextflow.io/docs/latest/metadata.html
  */
-workflow.onComplete {
-  // Log colors ANSI codes
-  /*
-  * ANSI escape codes to color output messages
-  */
-  def ANSI_GREEN = "\033[1;32m"
-  def ANSI_RED = "\033[1;31m"
-  def ANSI_RESET = "\033[0m"
- 
-  println """
-  Pipeline execution summary
-  ---------------------------
-  Completed at : ${ANSI_GREEN}${workflow.complete}${ANSI_RESET}
-  Duration     : ${ANSI_GREEN}${workflow.duration}${ANSI_RESET}
-  Success      : ${workflow.success ? ANSI_GREEN : ANSI_RED}${workflow.success}${ANSI_RESET}
-  Results Dir  : ${ANSI_GREEN}${file(params.outdir)}${ANSI_RESET}
-  Work Dir     : ${ANSI_GREEN}${workflow.workDir}${ANSI_RESET}
-  Exit status  : ${ANSI_GREEN}${workflow.exitStatus}${ANSI_RESET}
-  Error report : ${ANSI_GREEN}${workflow.errorReport ?: '-'}${ANSI_RESET}
-  """.stripIndent()
-}
 
 def parse_mnf(mnf) {
     /*

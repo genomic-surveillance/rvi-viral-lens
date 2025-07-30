@@ -10,17 +10,27 @@
                             "sample_id": "test"
                         },
                         [
-                            "test.9000000.sorted.bam:md5,d32e9ae9bfe70b900ceca79140f61468",
-                            "test.9000000.sorted.bam.bai:md5,536c3a693cabd649465bf8bd1fcd5aed"
-                        ]
+                            "test_1.fastq.gz:md5,01e18a1b25a8d6939b02595c0154086e",
+                            "test_2.fastq.gz:md5,c09a3e533a6fff087699905977295063"
+                        ],
+                        "9000000.fa:md5,6c38e163d9237257547847cfdc3bbe1c",
+                        [
+                            "9000000.fa.pac:md5,4d688454edcfd4288c81c53ec3fd61f7",
+                            "9000000.fa.sa:md5,e28e31851f205dc7e10addb1539a37b8",
+                            "9000000.fa.ann:md5,38b386185e13faaf203a72d6eb35b3b1",
+                            "9000000.fa.bwt:md5,bb168f9981319ee685c46a530d0e023b",
+                            "9000000.fa.amb:md5,09ac005afb0d84727d981bf17390666b"
+                        ],
+                        "test.9000000.sorted.bam:md5,d32e9ae9bfe70b900ceca79140f61468",
+                        "test.9000000.sorted.bam.bai:md5,536c3a693cabd649465bf8bd1fcd5aed"
                     ]
                 ]
             }
         ],
         "meta": {
-            "nf-test": "0.8.4",
-            "nextflow": "24.10.3"
+            "nf-test": "0.9.2",
+            "nextflow": "24.10.4"
         },
-        "timestamp": "2025-03-04T21:21:29.824955"
+        "timestamp": "2025-07-28T10:38:05.750811"
     }
 }

@@ -39,40 +39,6 @@ nextflow_pipeline {
     name "Test Workflow main.nf"
     script "main.nf"
 
-    test("Should fail if invalid min_coverage_percent") {
-       when{ 
-        params {
-            db_path="${projectDir}/tests/test_data/test_kraken_databases/minimal"
-            manifest="${projectDir}/tests/test_data/test_manifests/test_input_manifest_located.csv"
-            min_coverage_percent = "notAFloat"
-            }
-       }
-        then {
-            assert workflow.failed
-            assert workflow.exitStatus == 1
-            assert workflow.stdout.contains('ERROR ~ Validation of pipeline parameters failed!')
-            assert workflow.stderr.contains('* --min_coverage_percent (notAFloat): Value is [string] but should be [integer]')
-
-
-        }
-    }
-
-    test("Should fail if min_coverage_percent not between 0.0 and 100.0") {
-       when{ 
-        params {
-            db_path="${projectDir}/tests/test_data/test_kraken_databases/minimal"
-            manifest="${projectDir}/tests/test_data/test_manifests/test_input_manifest_located.csv"
-            min_coverage_percent = 200.0
-            }
-       }
-        then {
-            assert workflow.failed
-            assert workflow.exitStatus == 1
-            assert workflow.stdout.contains('ERROR ~ min_coverage_percent value set (200.0) must be >=0.0 and <=100.0')
-
-        }
-    }
-
     test("Should fail on consecutive underscore on sample id") {
 
         when {
@@ -170,11 +136,12 @@ nextflow_pipeline {
             assert file("${dir_A}/2697049/${sample_id_A}.2697049.consensus.fa").exists()
             assert file("${dir_A}/2697049/${sample_id_A}.2697049.sorted.bam").exists()
             assert file("${dir_A}/2697049/${sample_id_A}.2697049.sorted.bam.bai").exists()
-
+            assert file("${dir_A}/2697049/${sample_id_A}.2697049.properties.json").exists()
 
             assert file("${dir_A}/9000016/${sample_id_A}.9000016.consensus.fa").exists()
             assert file("${dir_A}/9000016/${sample_id_A}.9000016.sorted.bam").exists()
             assert file("${dir_A}/9000016/${sample_id_A}.9000016.sorted.bam.bai").exists()
+            assert file("${dir_A}/9000016/${sample_id_A}.9000016.properties.json").exists()
 
             def sample_id_B = "Zeptometrix_Panel_2_1_Control1_P1"
             def dir_B = "${launchDir}/results/${sample_id_B}/"
@@ -182,13 +149,12 @@ nextflow_pipeline {
             assert file("${dir_B}/9000016/${sample_id_B}.9000016.consensus.fa").exists()
             assert file("${dir_B}/9000016/${sample_id_B}.9000016.sorted.bam").exists()
             assert file("${dir_B}/9000016/${sample_id_B}.9000016.sorted.bam.bai").exists()
+            assert file("${dir_B}/9000016/${sample_id_B}.9000016.properties.json").exists()
 
             // check developer publish outputs
             // expected on the sample_id dir
-            // qc.csv
-            assert file("${dir_A}/2697049/${sample_id_A}.2697049.qc.csv").exists()
-            assert file("${dir_A}/9000016/${sample_id_A}.9000016.qc.csv").exists()
-            assert file("${dir_B}/9000016/${sample_id_B}.9000016.qc.csv").exists()
+            dir_A = "${launchDir}/results/developer_publish/${sample_id_A}/"
+            dir_B = "${launchDir}/results/developer_publish/${sample_id_B}/"
 
             // json
             assert file("${dir_A}/${sample_id_A}_decomposed.json")

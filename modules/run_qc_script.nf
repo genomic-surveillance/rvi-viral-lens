@@ -1,5 +1,4 @@
 // Copyright (C) 2023 Genome Surveillance Unit/Genome Research Ltd.
-params.qc_minimum_depth = 10
 
 process run_qc_script {
     /*
@@ -41,72 +40,30 @@ process run_qc_script {
     label "qc"
 
     input:
-    tuple val(meta), path(bam), path(fasta), path(ref), path(samtools_mpileup)
+    tuple val(meta), path(bam), path(bam_index), path(fasta), path(ivar_variants)
 
     output:
-    tuple val(meta), path("${meta.id}.qc.csv"), stdout
+    tuple val(meta), path(bam), path( bam_index), path(fasta), path(ivar_variants), path("${meta.id}.qc.json")
 
     script:
-    samtools_flagstat="${meta.id}.flagstat.out"
-    mpileup_depths="${meta.id}.depths.out"
+    samtools_flagstat="${meta.id}.flagstat.txt"
+    samtools_depth="${meta.id}.depths.txt"
+    samtools_bam_header="${meta.id}.sam_header.txt"
     """
     # Generate required samtools flagstat file
     samtools flagstat ${bam} > ${samtools_flagstat}
-
-    # Parse out the 3 key columns we need from mpileup output file
-    cat ${samtools_mpileup} | cut -f 1,2,4 > ${mpileup_depths}
+    samtools depth -a ${bam} > ${samtools_depth}
+    samtools view -H ${bam} > ${samtools_bam_header}
 
     # Run QC script
     qc.py \
-        --outfile ${meta.id}.qc.csv \
-        --sample ${meta.id} \
-        --ref ${ref} \
-        --bam ${bam} \
-        --fasta ${fasta} \
-        --depths_file ${mpileup_depths} \
-        --flagstat_file ${samtools_flagstat} \
-        --minimum_depth ${params.qc_minimum_depth} \
-        --ivar_md ${params.ivar_min_depth}
-
-    # Print first row of output file to stdout
-    sed -n "2p" ${meta.id}.qc.csv
+        --outfile ${meta.id}.qc.json \
+        --fasta_file ${fasta} \
+        --samtools_depth_file ${samtools_depth} \
+        --samtools_flagstat_file ${samtools_flagstat} \
+        --samtools_bam_header_file ${samtools_bam_header} \
+        --ivar_variants_file ${ivar_variants}
     """
-/*
-# Script Breakdown
 
-The script performs the following steps:
-
-1. **Generate flagstat report**: Runs samtools flagstat on the BAM
-    file to generate summary statistics, outputting the result to a
-    file (`.flagstat.out`).
-
-2. **Parse mpileup output**: Extracts key columns (reference sequence
-    name, position, and depth) from the samtools mpileup file and
-    saves them to a new file (`.depths.out`).
-
-3. **Run the custom QC script**: Executes the `qc.py` script, passing
-    in the BAM, FASTA, reference, and depths files, along with sample
-    metadata. The script generates the final QC report as a CSV file
-    (`.qc.csv`). Key parameters include:
-        - `--outfile`: Path to the output CSV file.
-        - `--sample`: Sample ID.
-        - `--ref`: Reference file.
-        - `--bam`: BAM file.
-        - `--fasta`: FASTA file.
-        - `--depths_file`: Parsed mpileup depths file.
-        - `--flagstat_file`: Samtools flagstat output.
-        - `--minimum_depth`: Minimum depth required for quality 
-            evaluation (`params.qc_minimum_depth`).
-        - `--ivar_md`: Minimum depth threshold for ivar trimming
-            (`params.ivar_min_depth`).
-
-4. **Print output**: The second row of the generated CSV file is
-    printed to standard output using sed for logging purposes.
-        - Command: `sed -n "2p" ${meta.id}.qc.csv`
-        - This command prints the second line of the QC CSV file,
-        the first row of data (excluding headers). It provides a
-        quick check of the QC output for monitoring and verification
-        purposes.
-*/
 }
 
