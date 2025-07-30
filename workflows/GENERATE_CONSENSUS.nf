@@ -50,7 +50,7 @@ workflow GENERATE_CONSENSUS {
 
         // set ivar input channel
         bams_ch
-            | map {meta, fastq, ref_fa, ref_indices, bam, bam_idx ->
+            | map {meta, _fastq, ref_fa, _ref_indices, bam, bam_idx ->
                 tuple(meta, bam, bam_idx, ref_fa)
             }
             | set {ivar_in_ch} 
