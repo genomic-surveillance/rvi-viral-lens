@@ -19,18 +19,23 @@ process bwa_alignment_and_post_processing {
             - `sample_id`: sample ID
         - `fastq`: Path to the FASTQ file(s) containing sequencing
             reads to be aligned.
-        - `ref_files`: Path to the reference files required for 
-            alignment, including the reference FASTA 
-            (`${meta.taxid}.fa`).
+        - `ref_fasta`: Path to the reference files required for 
+            alignment
+        - `ref_indices` : list of paths to the index files for the ref fasta
+    
     
     * Output Tuple:
-        - Input tuple, plus an additional list comprising:
+        - Input tuple, plus:
           - Sorted BAM file (`*.sorted.bam`).
           - Index file for the sorted BAM (`*.sorted.bam.bai`).
     
     * ---------------------------------------------------------------
     * 
     */
+    tag "${meta.id}"
+    label "mem_2"
+    label "cpu_1"
+    label "time_queue_from_small"
     
     input:
         tuple val(meta), path(fastq), path(ref_fa), path(ref_indices)
@@ -56,7 +61,7 @@ process bwa_alignment_and_post_processing {
         samtools index ${meta.id}.sorted.bam
         """
 }
-
+         
 /*
 
 # Script Breakdown

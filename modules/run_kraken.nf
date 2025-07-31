@@ -35,8 +35,10 @@ process run_kraken {
 
     tag "${meta.id} - c=${task.cpus} - m=${task.memory}"
     label "kraken"
+    // baseline for kraken2 will be 4 CPUs and 2 GB; but both of these are overridable 
+    // with command-line options (see config)
     label 'mem_2'
-    label "cpu_16"
+    label "cpu_4"
 
     input:
         tuple val(meta), path(fastqs) // tuple(sample_id, [fastq_pairs])

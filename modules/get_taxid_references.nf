@@ -38,6 +38,8 @@ process get_taxid_reference_files{
 
     tag "${taxid}"
     label "get_taxid_reference_files"
+    label "cpu_1"
+    label "mem_100M"
 
     input:
         val(taxid)
