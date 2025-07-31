@@ -22,7 +22,8 @@ nextflow_process {
                 // define inputs of the process here. Example:
                 input[0]=tuple(
                     params.meta,
-                    file("${params.test_loc}/test_alignments/test*"),
+                    file("${params.test_loc}/test_alignments/test2.9000000.sorted.bam"),
+                    file("${params.test_loc}/test_alignments/test2.9000000.sorted.bam.bai"),
                     file("${params.test_loc}/test_references/9000000.fa")
                 )
                 """

@@ -24,7 +24,6 @@ workflow GENERATE_CONSENSUS {
         ID.
         - `taxid`: Taxonomic ID of the sample.
         - `sample_id`: Sample identifier.
-        - `ref_files`: Paths to reference genome files.
 
     -----------------------------------------------------------------
     # Key Processes
@@ -40,78 +39,25 @@ workflow GENERATE_CONSENSUS {
     */
 
     take:
-
-        sample_taxid_ch // tuple (meta, reads)
+        sample_taxid_ch // tuple (meta, reads, ref_files)
         
     main:
-        // prepare bwa input channel
-        sample_taxid_ch
-            | map {meta, reads -> tuple(meta,reads,meta.ref_files)}
-            | set {bwa_input_ch} // tuple(meta, reads, ref_genome_paths)
-
         // align reads to reference
-        bwa_alignment_and_post_processing (bwa_input_ch)
-        bams_ch = bwa_alignment_and_post_processing.out // tuple (meta, [sorted_bam, bai])
+        bwa_alignment_and_post_processing (sample_taxid_ch)
+        bams_ch = bwa_alignment_and_post_processing.out 
 
         // set ivar input channel
         bams_ch
-            | map {meta, bams ->
-                // store bam file on meta (check TODO)
-                def new_meta = meta.plus([bam_file : bams[0]])
-                tuple(new_meta, bams, new_meta.ref_files[0])}
-            | set {ivar_in_ch} // tuple (new_meta, bam, ref_fasta)
+            | map {meta, _fastq, ref_fa, _ref_indices, bam, bam_idx ->
+                tuple(meta, bam, bam_idx, ref_fa)
+            }
+            | set {ivar_in_ch} 
 
-        // generate consensus using ivar
         run_ivar(ivar_in_ch)
-
-        // add mpileup output file to meta
-        run_ivar.out // tuple (meta, fasta_file, mpileup_file)
-            | map {meta, fasta_file, mpileup_file, stdout -> 
-                def mut_tokens_lst = stdout.tokenize("---")[-1].tokenize("\n")
-                // set meta with mutation information
-                def new_meta = meta.plus([
-                    total_mutations: mut_tokens_lst[1].tokenize(":")[-1],
-                    n_insertions: mut_tokens_lst[2].tokenize(":")[-1],
-                    n_deletions: mut_tokens_lst[3].tokenize(":")[-1],
-                    n_snps: mut_tokens_lst[4].tokenize(":")[-1],
-                    n_ti: mut_tokens_lst[5].tokenize(":")[-1],
-                    n_tv: mut_tokens_lst[6].tokenize(":")[-1],
-                    ti_tv_ratio: mut_tokens_lst[7].tokenize(":")[-1],
-                    mpileup_file: mpileup_file
-                ])
-                tuple(new_meta, fasta_file)}
-            | set {out_ch}
-
+        
     emit:
-        out_ch // tuple (meta, fasta_file)
+        run_ivar.out
 
-//-------------------------------------------------------------------
-// TODO: We should consider output bam files explicitly instead 
-//           of implictily stored on meta.
-//-------------------------------------------------------------------
-}
-
-
-
-def parse_consensus_mnf_meta(consensus_mnf) {
-    // consensus_mnf <Channel.fromPath()>
-    def mnf_ch =  Channel.fromPath(consensus_mnf)
-                        .splitCsv(header: true, sep: ',')
-                        .map {row -> 
-                            // set meta
-                            def meta = [sample_id: row.sample_id,
-                                    taxid: row.taxid,
-                                    ref_files: row.ref_files.split(";").collect()]
-
-                            meta.id = "${row.sample_id}.${row.taxid}"
-
-                            // set files
-                            def reads = [row.reads_1, row.reads_2]
-
-                            // declare channel shape
-                            tuple(meta, reads)
-                        }
-    return mnf_ch // tuple(index, [fastq_pairs])
 }
 
 def check_generate_consensus_params(){

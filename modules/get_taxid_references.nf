@@ -43,7 +43,7 @@ process get_taxid_reference_files{
         val(taxid)
         val(kraken_db_library_path)
     output:
-        tuple val(taxid), path("${taxid}.fa*"), optional : true
+        tuple val(taxid), path("${taxid}.fa"), path("${taxid}.fa.*"), stdout, optional : true
 
     script:
 $/
@@ -73,7 +73,6 @@ with open(source_fna_path, "r") as source_file:
             seq += line
 
 # Write output only if a matching sequence is found
-print(f"{nfound} sequences for {taxid_to_find}")
 if found:
     ## replace open_paren with hyphen and remove close_paren
     ## this is to avoid those chars being an issue when
@@ -82,6 +81,8 @@ if found:
     with open(output_file, "w") as output:
         output.write(header_to_write + "\n" + seq + "\n")
 
+    # Also write header to stdout so that we can record it as a property
+    print( header_to_write, end="" )
     # Run bwa index on the output file
     subprocess.run(["bwa", "index", output_file])
 /$

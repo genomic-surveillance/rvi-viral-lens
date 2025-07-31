@@ -1,9 +1,10 @@
 // Copyright (C) 2023 Genome Surveillance Unit/Genome Research Ltd.
 params.ivar_min_depth = 10
 params.ivar_freq_threshold = 0.75 // Minimum frequency threshold(0 - 1) to call variants (Ivar Default: 0.03)
-params.ivar_min_quality_treshold = 0.20 // Minimum quality score threshold to count base (Ivar Default: 0.20)
+params.ivar_min_quality_threshold = 0.20 // Minimum quality score threshold to count base (Ivar Default: 0.20)
+params.qc_minimum_depth = 10
 
-process run_ivar{
+process run_ivar {
   /*
   *       Obtain Consensus Sequences using ivar
   
@@ -41,34 +42,30 @@ process run_ivar{
    - `ivar_freq_threshold`: Minimum frequency threshold (0 - 1) to call
         consensus. Bases with a frequency below this threshold are not 
         called. The default value is `0.75`.
-   - `ivar_min_quality_treshold`: Minimum quality score threshold to 
+   - `ivar_min_quality_threshold`: Minimum quality score threshold to 
         count base (Ivar Default: 0.20) 
   
   * -----------------------------------------------------------------
   */
 
   tag "${meta.id}"
-  label "sample_output"
   label "ivar"
 
   input:
-    tuple val(meta), path(bams), path(reference_fasta)
+    tuple val(meta), path(bam), path(bam_index), path(ref_fa)
 
   output:
-    tuple val(meta), path("${meta.id}.consensus.fa"), path(mpileup_output), stdout
+    tuple val(meta), path(bam), path(bam_index), path("${meta.id}.consensus.fa"), path("${meta.id}.variants.tsv")
 
   script:
-    sorted_bam = "${meta.id}.sorted.bam"
-    mpileup_output="${meta.id}.mpileup.out"
+    mpileup_output="${meta.id}.mpileup.txt"
     """
     set -e
     set -o pipefail
 
-    samtools mpileup -aa -A -B -d 0 -Q0 ${sorted_bam} > ${mpileup_output}
+    samtools mpileup -aa -A -B -d 0 -Q0 ${bam} > ${mpileup_output}
     cat ${mpileup_output} | ivar consensus -t ${params.ivar_freq_threshold} -m ${params.ivar_min_depth} -n N -p ${meta.id}.consensus
-    cat ${mpileup_output} | ivar variants -t ${params.ivar_freq_threshold} -q ${params.ivar_min_quality_treshold} -r ${reference_fasta} -p ${meta.id}_mutations
-    echo "---"
-    mut_stats.py ${meta.id}_mutations.tsv
+    cat ${mpileup_output} | ivar variants -t ${params.ivar_freq_threshold} -q ${params.ivar_min_quality_threshold} -r ${ref_fa} -p ${meta.id}.variants
     """
 }
 

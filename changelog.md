@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.4.0]
+
+- **[added]**: rewrite of qc.py to compute more properties and produce properties.json per consensus sequence
+- **[added]**: a consensus_sequence_properties.json file is produced for the run
+- **[added]**: additional column has been added to classification_report.csv: Total_Mapped_Bases
+- **[change]**: classification report columns Percentage_N_bases changes to Percentage_non_N_bases
+- **[change]**: reversion to a single classification report and removal of parameters for asserting "invalid" sequences
+- **[change]**: filtering out of all consensus sequences (and associated files) that comprise 100% Ns
+- **[change]**: changes to workflow and process interfaces for clarity
+
 ## [1.3.1]
 
 - **[fix]**: additional fix to `developer_publish` sorted reads FASTQ files
