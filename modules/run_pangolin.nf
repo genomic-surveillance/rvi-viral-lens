@@ -30,6 +30,8 @@ process run_pangolin {
     */
     label "pangolin"
     tag "${meta.id}"
+    label "mem_6"
+    label "cpu_1"
 
     input:
         tuple val(meta), path(mapped_fasta)

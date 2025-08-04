@@ -50,6 +50,8 @@ process run_ivar {
 
   tag "${meta.id}"
   label "ivar"
+  label "cpu_1"
+  label "time_queue_from_small"
 
   input:
     tuple val(meta), path(bam), path(bam_index), path(ref_fa)
