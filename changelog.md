@@ -11,6 +11,7 @@ All notable changes to this project will be documented in this file.
 - **[change]**: reversion to a single classification report and removal of parameters for asserting "invalid" sequences
 - **[change]**: filtering out of all consensus sequences (and associated files) that comprise 100% Ns
 - **[change]**: changes to workflow and process interfaces for clarity
+- **[change]**: sanger_standard execution profile now submits bwa and ivar tasks to LSF
 
 ## [1.3.1]
 

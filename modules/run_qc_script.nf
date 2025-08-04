@@ -38,6 +38,8 @@ process run_qc_script {
     tag {meta.id}
 
     label "qc"
+    label "mem_250M"
+    label "cpu_1"
 
     input:
     tuple val(meta), path(bam), path(bam_index), path(fasta), path(ivar_variants)
