@@ -4,6 +4,7 @@ All notable changes to this project will be documented in this file.
 
 ## [1.4.0]
 
+- **[fix]**: correct ivar_min_quality_threshold to use integer value
 - **[added]**: rewrite of qc.py to compute more properties and produce properties.json per consensus sequence
 - **[added]**: a consensus_sequence_properties.json file is produced for the run
 - **[added]**: additional column has been added to classification_report.csv: Total_Mapped_Bases

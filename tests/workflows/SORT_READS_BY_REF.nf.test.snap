@@ -8,18 +8,19 @@
                             "sample_id": "FluH1N1_SARSCoV2_hPIV1_33K_ea_P1",
                             "taxid": "2697049",
                             "id": "FluH1N1_SARSCoV2_hPIV1_33K_ea_P1.2697049",
-                            "ref_files": [
-                                "2697049.fa:md5,7ca8f77fb20a6bcb1eb0ce45d2504268",
-                                "2697049.fa.amb:md5,80f653e5d4e35ada77d0a10eb91e4d2d",
-                                "2697049.fa.ann:md5,60df9428892d946d9723a235b7e9346b",
-                                "2697049.fa.bwt:md5,88f3909bc7c2f9196bd5b1f1dd5d54a6",
-                                "2697049.fa.pac:md5,f631387e31f59214b85a8a80f63155f6",
-                                "2697049.fa.sa:md5,5bf62e5242a3b6889cb64a38049c6586"
-                            ]
+                            "reference_header": ">kraken:taxid|2697049|NC_045512.2 Severe acute respiratory syndrome coronavirus 2 isolate Wuhan-Hu-1, complete genome"
                         },
                         [
                             "FluH1N1_SARSCoV2_hPIV1_33K_ea_P1_2697049_R1.fq:md5,8bcd96733f6e9c5fac417d76012f06cf",
                             "FluH1N1_SARSCoV2_hPIV1_33K_ea_P1_2697049_R2.fq:md5,7379101db73756bc92027d7b704aefca"
+                        ],
+                        "2697049.fa:md5,7ca8f77fb20a6bcb1eb0ce45d2504268",
+                        [
+                            "2697049.fa.amb:md5,80f653e5d4e35ada77d0a10eb91e4d2d",
+                            "2697049.fa.ann:md5,60df9428892d946d9723a235b7e9346b",
+                            "2697049.fa.bwt:md5,88f3909bc7c2f9196bd5b1f1dd5d54a6",
+                            "2697049.fa.pac:md5,f631387e31f59214b85a8a80f63155f6",
+                            "2697049.fa.sa:md5,5bf62e5242a3b6889cb64a38049c6586"
                         ]
                     ],
                     [
@@ -27,18 +28,19 @@
                             "sample_id": "FluH1N1_SARSCoV2_hPIV1_33K_ea_P1",
                             "taxid": "9000016",
                             "id": "FluH1N1_SARSCoV2_hPIV1_33K_ea_P1.9000016",
-                            "ref_files": [
-                                "9000016.fa:md5,f5f85d01f06c78fe44ecb9dfce3652b7",
-                                "9000016.fa.amb:md5,be1cb7424ad94cdb4ce7fdfe71297425",
-                                "9000016.fa.ann:md5,9bafd2cce13f1dc7e69d9a9cdaa77e65",
-                                "9000016.fa.bwt:md5,39aba8c17eaf29662a62e33bdfedff1d",
-                                "9000016.fa.pac:md5,71dd7e7feda74ca74fb2eed266a0d697",
-                                "9000016.fa.sa:md5,3d2f78913cf73958df6d260ee344fd95"
-                            ]
+                            "reference_header": ">kraken:taxid|9000016|NC_026438.1 Influenza A virus -A/California/07/2009-H1N1 segment 1, polymerase PB2 -PB2 gene, complete cds"
                         },
                         [
                             "FluH1N1_SARSCoV2_hPIV1_33K_ea_P1_9000016_R1.fq:md5,9c3a99344dd54c1605674c3b00e5e312",
                             "FluH1N1_SARSCoV2_hPIV1_33K_ea_P1_9000016_R2.fq:md5,27e5cd33de4116d17b47f25c988b28ff"
+                        ],
+                        "9000016.fa:md5,f5f85d01f06c78fe44ecb9dfce3652b7",
+                        [
+                            "9000016.fa.amb:md5,be1cb7424ad94cdb4ce7fdfe71297425",
+                            "9000016.fa.ann:md5,9bafd2cce13f1dc7e69d9a9cdaa77e65",
+                            "9000016.fa.bwt:md5,39aba8c17eaf29662a62e33bdfedff1d",
+                            "9000016.fa.pac:md5,71dd7e7feda74ca74fb2eed266a0d697",
+                            "9000016.fa.sa:md5,3d2f78913cf73958df6d260ee344fd95"
                         ]
                     ],
                     [
@@ -46,18 +48,19 @@
                             "sample_id": "SARSCoV2_FluH1N1_50K_each_P1",
                             "taxid": "2697049",
                             "id": "SARSCoV2_FluH1N1_50K_each_P1.2697049",
-                            "ref_files": [
-                                "2697049.fa:md5,7ca8f77fb20a6bcb1eb0ce45d2504268",
-                                "2697049.fa.amb:md5,80f653e5d4e35ada77d0a10eb91e4d2d",
-                                "2697049.fa.ann:md5,60df9428892d946d9723a235b7e9346b",
-                                "2697049.fa.bwt:md5,88f3909bc7c2f9196bd5b1f1dd5d54a6",
-                                "2697049.fa.pac:md5,f631387e31f59214b85a8a80f63155f6",
-                                "2697049.fa.sa:md5,5bf62e5242a3b6889cb64a38049c6586"
-                            ]
+                            "reference_header": ">kraken:taxid|2697049|NC_045512.2 Severe acute respiratory syndrome coronavirus 2 isolate Wuhan-Hu-1, complete genome"
                         },
                         [
                             "SARSCoV2_FluH1N1_50K_each_P1_2697049_R1.fq:md5,487c4688192a8580bae7a72019340396",
                             "SARSCoV2_FluH1N1_50K_each_P1_2697049_R2.fq:md5,b3f2833cd0baf71d0fd951521bd9d985"
+                        ],
+                        "2697049.fa:md5,7ca8f77fb20a6bcb1eb0ce45d2504268",
+                        [
+                            "2697049.fa.amb:md5,80f653e5d4e35ada77d0a10eb91e4d2d",
+                            "2697049.fa.ann:md5,60df9428892d946d9723a235b7e9346b",
+                            "2697049.fa.bwt:md5,88f3909bc7c2f9196bd5b1f1dd5d54a6",
+                            "2697049.fa.pac:md5,f631387e31f59214b85a8a80f63155f6",
+                            "2697049.fa.sa:md5,5bf62e5242a3b6889cb64a38049c6586"
                         ]
                     ],
                     [
@@ -65,18 +68,19 @@
                             "sample_id": "SARSCoV2_FluH1N1_50K_each_P1",
                             "taxid": "9000016",
                             "id": "SARSCoV2_FluH1N1_50K_each_P1.9000016",
-                            "ref_files": [
-                                "9000016.fa:md5,f5f85d01f06c78fe44ecb9dfce3652b7",
-                                "9000016.fa.amb:md5,be1cb7424ad94cdb4ce7fdfe71297425",
-                                "9000016.fa.ann:md5,9bafd2cce13f1dc7e69d9a9cdaa77e65",
-                                "9000016.fa.bwt:md5,39aba8c17eaf29662a62e33bdfedff1d",
-                                "9000016.fa.pac:md5,71dd7e7feda74ca74fb2eed266a0d697",
-                                "9000016.fa.sa:md5,3d2f78913cf73958df6d260ee344fd95"
-                            ]
+                            "reference_header": ">kraken:taxid|9000016|NC_026438.1 Influenza A virus -A/California/07/2009-H1N1 segment 1, polymerase PB2 -PB2 gene, complete cds"
                         },
                         [
                             "SARSCoV2_FluH1N1_50K_each_P1_9000016_R1.fq:md5,950b70ee147656de34f46886771e8fcb",
                             "SARSCoV2_FluH1N1_50K_each_P1_9000016_R2.fq:md5,86a4947fe317f68d3de79488e326889e"
+                        ],
+                        "9000016.fa:md5,f5f85d01f06c78fe44ecb9dfce3652b7",
+                        [
+                            "9000016.fa.amb:md5,be1cb7424ad94cdb4ce7fdfe71297425",
+                            "9000016.fa.ann:md5,9bafd2cce13f1dc7e69d9a9cdaa77e65",
+                            "9000016.fa.bwt:md5,39aba8c17eaf29662a62e33bdfedff1d",
+                            "9000016.fa.pac:md5,71dd7e7feda74ca74fb2eed266a0d697",
+                            "9000016.fa.sa:md5,3d2f78913cf73958df6d260ee344fd95"
                         ]
                     ],
                     [
@@ -84,30 +88,155 @@
                             "sample_id": "Zeptometrix_Panel_2_1_Control1_P1",
                             "taxid": "9000016",
                             "id": "Zeptometrix_Panel_2_1_Control1_P1.9000016",
-                            "ref_files": [
-                                "9000016.fa:md5,f5f85d01f06c78fe44ecb9dfce3652b7",
-                                "9000016.fa.amb:md5,be1cb7424ad94cdb4ce7fdfe71297425",
-                                "9000016.fa.ann:md5,9bafd2cce13f1dc7e69d9a9cdaa77e65",
-                                "9000016.fa.bwt:md5,39aba8c17eaf29662a62e33bdfedff1d",
-                                "9000016.fa.pac:md5,71dd7e7feda74ca74fb2eed266a0d697",
-                                "9000016.fa.sa:md5,3d2f78913cf73958df6d260ee344fd95"
-                            ]
+                            "reference_header": ">kraken:taxid|9000016|NC_026438.1 Influenza A virus -A/California/07/2009-H1N1 segment 1, polymerase PB2 -PB2 gene, complete cds"
                         },
                         [
                             "Zeptometrix_Panel_2_1_Control1_P1_9000016_R1.fq:md5,bdbf8277c83689146886c8b3aa5e90e2",
                             "Zeptometrix_Panel_2_1_Control1_P1_9000016_R2.fq:md5,1628ed7ad60c2627076b6ac6754895c5"
+                        ],
+                        "9000016.fa:md5,f5f85d01f06c78fe44ecb9dfce3652b7",
+                        [
+                            "9000016.fa.amb:md5,be1cb7424ad94cdb4ce7fdfe71297425",
+                            "9000016.fa.ann:md5,9bafd2cce13f1dc7e69d9a9cdaa77e65",
+                            "9000016.fa.bwt:md5,39aba8c17eaf29662a62e33bdfedff1d",
+                            "9000016.fa.pac:md5,71dd7e7feda74ca74fb2eed266a0d697",
+                            "9000016.fa.sa:md5,3d2f78913cf73958df6d260ee344fd95"
                         ]
                     ]
                 ],
                 "1": [
-                    "FluH1N1_SARSCoV2_hPIV1_33K_ea_P1_pre_report.tsv:md5,312f38c88b658d9e2a9122ad50591c5e",
-                    "SARSCoV2_FluH1N1_50K_each_P1_pre_report.tsv:md5,e7a79768d4094cc274a0383a4bf5b2f4",
-                    "Zeptometrix_Panel_2_1_Control1_P1_pre_report.tsv:md5,d4bb882ba9b08e16542cb7c86ed941dc"
+                    {
+                        "flu_segment": "",
+                        "num_reads": "5773",
+                        "parent_selected": "False",
+                        "ref_selected": "Severe acute respiratory syndrome coronavirus 2",
+                        "report_name": "Severe acute respiratory syndrome-related coronavirus",
+                        "sample_id": "FluH1N1_SARSCoV2_hPIV1_33K_ea_P1",
+                        "sample_subtype": "",
+                        "selected_taxid": "2697049",
+                        "virus": "694009",
+                        "virus_name": "Severe acute respiratory syndrome-related coronavirus",
+                        "virus_subtype": ""
+                    },
+                    {
+                        "flu_segment": "",
+                        "num_reads": "7297",
+                        "parent_selected": "False",
+                        "ref_selected": "Severe acute respiratory syndrome coronavirus 2",
+                        "report_name": "Severe acute respiratory syndrome-related coronavirus",
+                        "sample_id": "SARSCoV2_FluH1N1_50K_each_P1",
+                        "sample_subtype": "",
+                        "selected_taxid": "2697049",
+                        "virus": "694009",
+                        "virus_name": "Severe acute respiratory syndrome-related coronavirus",
+                        "virus_subtype": ""
+                    },
+                    {
+                        "flu_segment": "1",
+                        "num_reads": "193",
+                        "parent_selected": "True",
+                        "ref_selected": "Influenza A/H1N1 segment 1",
+                        "report_name": "Influenza A Virus",
+                        "sample_id": "Zeptometrix_Panel_2_1_Control1_P1",
+                        "sample_subtype": "",
+                        "selected_taxid": "9000016",
+                        "virus": "2955291",
+                        "virus_name": "Alphainfluenzavirus influenzae",
+                        "virus_subtype": "H1N1"
+                    },
+                    {
+                        "flu_segment": "1",
+                        "num_reads": "2171",
+                        "parent_selected": "False",
+                        "ref_selected": "Influenza A/H1N1 segment 1",
+                        "report_name": "Influenza A Virus",
+                        "sample_id": "FluH1N1_SARSCoV2_hPIV1_33K_ea_P1",
+                        "sample_subtype": "",
+                        "selected_taxid": "9000016",
+                        "virus": "2955291",
+                        "virus_name": "Alphainfluenzavirus influenzae",
+                        "virus_subtype": "H1N1"
+                    },
+                    {
+                        "flu_segment": "1",
+                        "num_reads": "2703",
+                        "parent_selected": "False",
+                        "ref_selected": "Influenza A/H1N1 segment 1",
+                        "report_name": "Influenza A Virus",
+                        "sample_id": "SARSCoV2_FluH1N1_50K_each_P1",
+                        "sample_subtype": "",
+                        "selected_taxid": "9000016",
+                        "virus": "2955291",
+                        "virus_name": "Alphainfluenzavirus influenzae",
+                        "virus_subtype": "H1N1"
+                    }
                 ],
                 "sample_pre_report_ch": [
-                    "FluH1N1_SARSCoV2_hPIV1_33K_ea_P1_pre_report.tsv:md5,312f38c88b658d9e2a9122ad50591c5e",
-                    "SARSCoV2_FluH1N1_50K_each_P1_pre_report.tsv:md5,e7a79768d4094cc274a0383a4bf5b2f4",
-                    "Zeptometrix_Panel_2_1_Control1_P1_pre_report.tsv:md5,d4bb882ba9b08e16542cb7c86ed941dc"
+                    {
+                        "flu_segment": "",
+                        "num_reads": "5773",
+                        "parent_selected": "False",
+                        "ref_selected": "Severe acute respiratory syndrome coronavirus 2",
+                        "report_name": "Severe acute respiratory syndrome-related coronavirus",
+                        "sample_id": "FluH1N1_SARSCoV2_hPIV1_33K_ea_P1",
+                        "sample_subtype": "",
+                        "selected_taxid": "2697049",
+                        "virus": "694009",
+                        "virus_name": "Severe acute respiratory syndrome-related coronavirus",
+                        "virus_subtype": ""
+                    },
+                    {
+                        "flu_segment": "",
+                        "num_reads": "7297",
+                        "parent_selected": "False",
+                        "ref_selected": "Severe acute respiratory syndrome coronavirus 2",
+                        "report_name": "Severe acute respiratory syndrome-related coronavirus",
+                        "sample_id": "SARSCoV2_FluH1N1_50K_each_P1",
+                        "sample_subtype": "",
+                        "selected_taxid": "2697049",
+                        "virus": "694009",
+                        "virus_name": "Severe acute respiratory syndrome-related coronavirus",
+                        "virus_subtype": ""
+                    },
+                    {
+                        "flu_segment": "1",
+                        "num_reads": "193",
+                        "parent_selected": "True",
+                        "ref_selected": "Influenza A/H1N1 segment 1",
+                        "report_name": "Influenza A Virus",
+                        "sample_id": "Zeptometrix_Panel_2_1_Control1_P1",
+                        "sample_subtype": "",
+                        "selected_taxid": "9000016",
+                        "virus": "2955291",
+                        "virus_name": "Alphainfluenzavirus influenzae",
+                        "virus_subtype": "H1N1"
+                    },
+                    {
+                        "flu_segment": "1",
+                        "num_reads": "2171",
+                        "parent_selected": "False",
+                        "ref_selected": "Influenza A/H1N1 segment 1",
+                        "report_name": "Influenza A Virus",
+                        "sample_id": "FluH1N1_SARSCoV2_hPIV1_33K_ea_P1",
+                        "sample_subtype": "",
+                        "selected_taxid": "9000016",
+                        "virus": "2955291",
+                        "virus_name": "Alphainfluenzavirus influenzae",
+                        "virus_subtype": "H1N1"
+                    },
+                    {
+                        "flu_segment": "1",
+                        "num_reads": "2703",
+                        "parent_selected": "False",
+                        "ref_selected": "Influenza A/H1N1 segment 1",
+                        "report_name": "Influenza A Virus",
+                        "sample_id": "SARSCoV2_FluH1N1_50K_each_P1",
+                        "sample_subtype": "",
+                        "selected_taxid": "9000016",
+                        "virus": "2955291",
+                        "virus_name": "Alphainfluenzavirus influenzae",
+                        "virus_subtype": "H1N1"
+                    }
                 ],
                 "sample_taxid_ch": [
                     [
@@ -115,18 +244,19 @@
                             "sample_id": "FluH1N1_SARSCoV2_hPIV1_33K_ea_P1",
                             "taxid": "2697049",
                             "id": "FluH1N1_SARSCoV2_hPIV1_33K_ea_P1.2697049",
-                            "ref_files": [
-                                "2697049.fa:md5,7ca8f77fb20a6bcb1eb0ce45d2504268",
-                                "2697049.fa.amb:md5,80f653e5d4e35ada77d0a10eb91e4d2d",
-                                "2697049.fa.ann:md5,60df9428892d946d9723a235b7e9346b",
-                                "2697049.fa.bwt:md5,88f3909bc7c2f9196bd5b1f1dd5d54a6",
-                                "2697049.fa.pac:md5,f631387e31f59214b85a8a80f63155f6",
-                                "2697049.fa.sa:md5,5bf62e5242a3b6889cb64a38049c6586"
-                            ]
+                            "reference_header": ">kraken:taxid|2697049|NC_045512.2 Severe acute respiratory syndrome coronavirus 2 isolate Wuhan-Hu-1, complete genome"
                         },
                         [
                             "FluH1N1_SARSCoV2_hPIV1_33K_ea_P1_2697049_R1.fq:md5,8bcd96733f6e9c5fac417d76012f06cf",
                             "FluH1N1_SARSCoV2_hPIV1_33K_ea_P1_2697049_R2.fq:md5,7379101db73756bc92027d7b704aefca"
+                        ],
+                        "2697049.fa:md5,7ca8f77fb20a6bcb1eb0ce45d2504268",
+                        [
+                            "2697049.fa.amb:md5,80f653e5d4e35ada77d0a10eb91e4d2d",
+                            "2697049.fa.ann:md5,60df9428892d946d9723a235b7e9346b",
+                            "2697049.fa.bwt:md5,88f3909bc7c2f9196bd5b1f1dd5d54a6",
+                            "2697049.fa.pac:md5,f631387e31f59214b85a8a80f63155f6",
+                            "2697049.fa.sa:md5,5bf62e5242a3b6889cb64a38049c6586"
                         ]
                     ],
                     [
@@ -134,18 +264,19 @@
                             "sample_id": "FluH1N1_SARSCoV2_hPIV1_33K_ea_P1",
                             "taxid": "9000016",
                             "id": "FluH1N1_SARSCoV2_hPIV1_33K_ea_P1.9000016",
-                            "ref_files": [
-                                "9000016.fa:md5,f5f85d01f06c78fe44ecb9dfce3652b7",
-                                "9000016.fa.amb:md5,be1cb7424ad94cdb4ce7fdfe71297425",
-                                "9000016.fa.ann:md5,9bafd2cce13f1dc7e69d9a9cdaa77e65",
-                                "9000016.fa.bwt:md5,39aba8c17eaf29662a62e33bdfedff1d",
-                                "9000016.fa.pac:md5,71dd7e7feda74ca74fb2eed266a0d697",
-                                "9000016.fa.sa:md5,3d2f78913cf73958df6d260ee344fd95"
-                            ]
+                            "reference_header": ">kraken:taxid|9000016|NC_026438.1 Influenza A virus -A/California/07/2009-H1N1 segment 1, polymerase PB2 -PB2 gene, complete cds"
                         },
                         [
                             "FluH1N1_SARSCoV2_hPIV1_33K_ea_P1_9000016_R1.fq:md5,9c3a99344dd54c1605674c3b00e5e312",
                             "FluH1N1_SARSCoV2_hPIV1_33K_ea_P1_9000016_R2.fq:md5,27e5cd33de4116d17b47f25c988b28ff"
+                        ],
+                        "9000016.fa:md5,f5f85d01f06c78fe44ecb9dfce3652b7",
+                        [
+                            "9000016.fa.amb:md5,be1cb7424ad94cdb4ce7fdfe71297425",
+                            "9000016.fa.ann:md5,9bafd2cce13f1dc7e69d9a9cdaa77e65",
+                            "9000016.fa.bwt:md5,39aba8c17eaf29662a62e33bdfedff1d",
+                            "9000016.fa.pac:md5,71dd7e7feda74ca74fb2eed266a0d697",
+                            "9000016.fa.sa:md5,3d2f78913cf73958df6d260ee344fd95"
                         ]
                     ],
                     [
@@ -153,18 +284,19 @@
                             "sample_id": "SARSCoV2_FluH1N1_50K_each_P1",
                             "taxid": "2697049",
                             "id": "SARSCoV2_FluH1N1_50K_each_P1.2697049",
-                            "ref_files": [
-                                "2697049.fa:md5,7ca8f77fb20a6bcb1eb0ce45d2504268",
-                                "2697049.fa.amb:md5,80f653e5d4e35ada77d0a10eb91e4d2d",
-                                "2697049.fa.ann:md5,60df9428892d946d9723a235b7e9346b",
-                                "2697049.fa.bwt:md5,88f3909bc7c2f9196bd5b1f1dd5d54a6",
-                                "2697049.fa.pac:md5,f631387e31f59214b85a8a80f63155f6",
-                                "2697049.fa.sa:md5,5bf62e5242a3b6889cb64a38049c6586"
-                            ]
+                            "reference_header": ">kraken:taxid|2697049|NC_045512.2 Severe acute respiratory syndrome coronavirus 2 isolate Wuhan-Hu-1, complete genome"
                         },
                         [
                             "SARSCoV2_FluH1N1_50K_each_P1_2697049_R1.fq:md5,487c4688192a8580bae7a72019340396",
                             "SARSCoV2_FluH1N1_50K_each_P1_2697049_R2.fq:md5,b3f2833cd0baf71d0fd951521bd9d985"
+                        ],
+                        "2697049.fa:md5,7ca8f77fb20a6bcb1eb0ce45d2504268",
+                        [
+                            "2697049.fa.amb:md5,80f653e5d4e35ada77d0a10eb91e4d2d",
+                            "2697049.fa.ann:md5,60df9428892d946d9723a235b7e9346b",
+                            "2697049.fa.bwt:md5,88f3909bc7c2f9196bd5b1f1dd5d54a6",
+                            "2697049.fa.pac:md5,f631387e31f59214b85a8a80f63155f6",
+                            "2697049.fa.sa:md5,5bf62e5242a3b6889cb64a38049c6586"
                         ]
                     ],
                     [
@@ -172,18 +304,19 @@
                             "sample_id": "SARSCoV2_FluH1N1_50K_each_P1",
                             "taxid": "9000016",
                             "id": "SARSCoV2_FluH1N1_50K_each_P1.9000016",
-                            "ref_files": [
-                                "9000016.fa:md5,f5f85d01f06c78fe44ecb9dfce3652b7",
-                                "9000016.fa.amb:md5,be1cb7424ad94cdb4ce7fdfe71297425",
-                                "9000016.fa.ann:md5,9bafd2cce13f1dc7e69d9a9cdaa77e65",
-                                "9000016.fa.bwt:md5,39aba8c17eaf29662a62e33bdfedff1d",
-                                "9000016.fa.pac:md5,71dd7e7feda74ca74fb2eed266a0d697",
-                                "9000016.fa.sa:md5,3d2f78913cf73958df6d260ee344fd95"
-                            ]
+                            "reference_header": ">kraken:taxid|9000016|NC_026438.1 Influenza A virus -A/California/07/2009-H1N1 segment 1, polymerase PB2 -PB2 gene, complete cds"
                         },
                         [
                             "SARSCoV2_FluH1N1_50K_each_P1_9000016_R1.fq:md5,950b70ee147656de34f46886771e8fcb",
                             "SARSCoV2_FluH1N1_50K_each_P1_9000016_R2.fq:md5,86a4947fe317f68d3de79488e326889e"
+                        ],
+                        "9000016.fa:md5,f5f85d01f06c78fe44ecb9dfce3652b7",
+                        [
+                            "9000016.fa.amb:md5,be1cb7424ad94cdb4ce7fdfe71297425",
+                            "9000016.fa.ann:md5,9bafd2cce13f1dc7e69d9a9cdaa77e65",
+                            "9000016.fa.bwt:md5,39aba8c17eaf29662a62e33bdfedff1d",
+                            "9000016.fa.pac:md5,71dd7e7feda74ca74fb2eed266a0d697",
+                            "9000016.fa.sa:md5,3d2f78913cf73958df6d260ee344fd95"
                         ]
                     ],
                     [
@@ -191,27 +324,28 @@
                             "sample_id": "Zeptometrix_Panel_2_1_Control1_P1",
                             "taxid": "9000016",
                             "id": "Zeptometrix_Panel_2_1_Control1_P1.9000016",
-                            "ref_files": [
-                                "9000016.fa:md5,f5f85d01f06c78fe44ecb9dfce3652b7",
-                                "9000016.fa.amb:md5,be1cb7424ad94cdb4ce7fdfe71297425",
-                                "9000016.fa.ann:md5,9bafd2cce13f1dc7e69d9a9cdaa77e65",
-                                "9000016.fa.bwt:md5,39aba8c17eaf29662a62e33bdfedff1d",
-                                "9000016.fa.pac:md5,71dd7e7feda74ca74fb2eed266a0d697",
-                                "9000016.fa.sa:md5,3d2f78913cf73958df6d260ee344fd95"
-                            ]
+                            "reference_header": ">kraken:taxid|9000016|NC_026438.1 Influenza A virus -A/California/07/2009-H1N1 segment 1, polymerase PB2 -PB2 gene, complete cds"
                         },
                         [
                             "Zeptometrix_Panel_2_1_Control1_P1_9000016_R1.fq:md5,bdbf8277c83689146886c8b3aa5e90e2",
                             "Zeptometrix_Panel_2_1_Control1_P1_9000016_R2.fq:md5,1628ed7ad60c2627076b6ac6754895c5"
+                        ],
+                        "9000016.fa:md5,f5f85d01f06c78fe44ecb9dfce3652b7",
+                        [
+                            "9000016.fa.amb:md5,be1cb7424ad94cdb4ce7fdfe71297425",
+                            "9000016.fa.ann:md5,9bafd2cce13f1dc7e69d9a9cdaa77e65",
+                            "9000016.fa.bwt:md5,39aba8c17eaf29662a62e33bdfedff1d",
+                            "9000016.fa.pac:md5,71dd7e7feda74ca74fb2eed266a0d697",
+                            "9000016.fa.sa:md5,3d2f78913cf73958df6d260ee344fd95"
                         ]
                     ]
                 ]
             }
         ],
         "meta": {
-            "nf-test": "0.9.0",
-            "nextflow": "24.10.5"
+            "nf-test": "0.9.2",
+            "nextflow": "25.04.4"
         },
-        "timestamp": "2025-03-12T15:19:30.373236"
+        "timestamp": "2025-08-06T12:06:30.598659627"
     }
 }
