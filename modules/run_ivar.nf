@@ -1,7 +1,7 @@
 // Copyright (C) 2023 Genome Surveillance Unit/Genome Research Ltd.
 params.ivar_min_depth = 10
 params.ivar_freq_threshold = 0.75 // Minimum frequency threshold(0 - 1) to call variants (Ivar Default: 0.03)
-params.ivar_min_quality_threshold = 0.20 // Minimum quality score threshold to count base (Ivar Default: 0.20)
+params.ivar_min_quality_threshold = 20 // Minimum quality score threshold to count base (Ivar Default: 20)
 params.qc_minimum_depth = 10
 
 process run_ivar {
@@ -43,7 +43,7 @@ process run_ivar {
         consensus. Bases with a frequency below this threshold are not 
         called. The default value is `0.75`.
    - `ivar_min_quality_threshold`: Minimum quality score threshold to 
-        count base (Ivar Default: 0.20) 
+        count base (Ivar Default: 20) 
   
   * -----------------------------------------------------------------
   */

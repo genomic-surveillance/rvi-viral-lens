@@ -5,63 +5,113 @@
                 "0": [
                     [
                         {
+                            "id": "test2.9000000",
                             "taxid": 9000000,
                             "sample_id": "test2",
-                            "bam_file": "test2.9000000.sorted.bam:md5,889f09bfe09b2d0d98c51fbbfd57dd3a",
-                            "mpileup_file": "test2.9000000.mpileup.out:md5,74081127ba0703f9e717412b0a359977",
-                            "id": "test2.9000000",
-                            "ref_files": [
-                                "9000000.fa:md5,6c38e163d9237257547847cfdc3bbe1c",
-                                "9000000.fa.amb:md5,09ac005afb0d84727d981bf17390666b",
-                                "9000000.fa.ann:md5,38b386185e13faaf203a72d6eb35b3b1",
-                                "9000000.fa.bwt:md5,bb168f9981319ee685c46a530d0e023b",
-                                "9000000.fa.pac:md5,4d688454edcfd4288c81c53ec3fd61f7",
-                                "9000000.fa.sa:md5,e28e31851f205dc7e10addb1539a37b8"
-                            ],
-                            "consensus_fa": "test2.9000000.consensus.fa:md5,8fa86ad0980cad63ea403c60ac2a3fb3",
-                            "percentage_of_N_bases": "0.42",
-                            "percentage_genome_coverage": "99.58",
-                            "longest_no_N_segment": "2360",
-                            "total_aligned_reads": "42182",
-                            "total_unmapped_reads": "17\r",
-                            "total_mapped_reads": "45225"
+                            "mutations": 181,
+                            "insertions": 1,
+                            "deletions": 0,
+                            "snps": 180,
+                            "ti_tv_ratio": "148/32",
+                            "reads_mapped": 42165,
+                            "bases_mapped": 5906987,
+                            "reads_mapped_in_proper_pairs": 41094,
+                            "reference_length": 2368,
+                            "positions_exceeding_depth": {
+                                "0": 2368,
+                                "5": 2358,
+                                "10": 2358,
+                                "15": 2358,
+                                "20": 2358,
+                                "25": 2358,
+                                "30": 2358,
+                                "35": 2358,
+                                "40": 2357,
+                                "45": 2357,
+                                "50": 2356,
+                                "55": 2356,
+                                "60": 2356,
+                                "65": 2356,
+                                "70": 2356,
+                                "75": 2356,
+                                "80": 2356,
+                                "85": 2356,
+                                "90": 2356,
+                                "95": 2356,
+                                "100": 2356
+                            },
+                            "percent_positions_exceeding_depth_10": 99.58,
+                            "percent_non_n_bases": 99.58,
+                            "longest_non_n_subsequence": 2359,
+                            "reads_unmapped": 17,
+                            "mean_depth_per_position": 2494,
+                            "consensus_length": 2369
                         },
-                        "test2.9000000.sorted.bam:md5,889f09bfe09b2d0d98c51fbbfd57dd3a"
+                        "test2.9000000.sorted.bam:md5,889f09bfe09b2d0d98c51fbbfd57dd3a",
+                        "test2.9000000.sorted.bam.bai:md5,3246b03eab5b39f491e9159c2d5c583b",
+                        "test2.9000000.consensus.fa:md5,8fa86ad0980cad63ea403c60ac2a3fb3",
+                        "test2.9000000.variants.tsv:md5,2d6012935de46ad579f812cb9366575f",
+                        "test2.9000000.qc.json:md5,184412f4f113dbc7272125ca647ff343"
                     ]
                 ],
-                "qc_Out_ch": [
+                "qc_out_ch": [
                     [
                         {
+                            "id": "test2.9000000",
                             "taxid": 9000000,
                             "sample_id": "test2",
-                            "bam_file": "test2.9000000.sorted.bam:md5,889f09bfe09b2d0d98c51fbbfd57dd3a",
-                            "mpileup_file": "test2.9000000.mpileup.out:md5,74081127ba0703f9e717412b0a359977",
-                            "id": "test2.9000000",
-                            "ref_files": [
-                                "9000000.fa:md5,6c38e163d9237257547847cfdc3bbe1c",
-                                "9000000.fa.amb:md5,09ac005afb0d84727d981bf17390666b",
-                                "9000000.fa.ann:md5,38b386185e13faaf203a72d6eb35b3b1",
-                                "9000000.fa.bwt:md5,bb168f9981319ee685c46a530d0e023b",
-                                "9000000.fa.pac:md5,4d688454edcfd4288c81c53ec3fd61f7",
-                                "9000000.fa.sa:md5,e28e31851f205dc7e10addb1539a37b8"
-                            ],
-                            "consensus_fa": "test2.9000000.consensus.fa:md5,8fa86ad0980cad63ea403c60ac2a3fb3",
-                            "percentage_of_N_bases": "0.42",
-                            "percentage_genome_coverage": "99.58",
-                            "longest_no_N_segment": "2360",
-                            "total_aligned_reads": "42182",
-                            "total_unmapped_reads": "17\r",
-                            "total_mapped_reads": "45225"
+                            "mutations": 181,
+                            "insertions": 1,
+                            "deletions": 0,
+                            "snps": 180,
+                            "ti_tv_ratio": "148/32",
+                            "reads_mapped": 42165,
+                            "bases_mapped": 5906987,
+                            "reads_mapped_in_proper_pairs": 41094,
+                            "reference_length": 2368,
+                            "positions_exceeding_depth": {
+                                "0": 2368,
+                                "5": 2358,
+                                "10": 2358,
+                                "15": 2358,
+                                "20": 2358,
+                                "25": 2358,
+                                "30": 2358,
+                                "35": 2358,
+                                "40": 2357,
+                                "45": 2357,
+                                "50": 2356,
+                                "55": 2356,
+                                "60": 2356,
+                                "65": 2356,
+                                "70": 2356,
+                                "75": 2356,
+                                "80": 2356,
+                                "85": 2356,
+                                "90": 2356,
+                                "95": 2356,
+                                "100": 2356
+                            },
+                            "percent_positions_exceeding_depth_10": 99.58,
+                            "percent_non_n_bases": 99.58,
+                            "longest_non_n_subsequence": 2359,
+                            "reads_unmapped": 17,
+                            "mean_depth_per_position": 2494,
+                            "consensus_length": 2369
                         },
-                        "test2.9000000.sorted.bam:md5,889f09bfe09b2d0d98c51fbbfd57dd3a"
+                        "test2.9000000.sorted.bam:md5,889f09bfe09b2d0d98c51fbbfd57dd3a",
+                        "test2.9000000.sorted.bam.bai:md5,3246b03eab5b39f491e9159c2d5c583b",
+                        "test2.9000000.consensus.fa:md5,8fa86ad0980cad63ea403c60ac2a3fb3",
+                        "test2.9000000.variants.tsv:md5,2d6012935de46ad579f812cb9366575f",
+                        "test2.9000000.qc.json:md5,184412f4f113dbc7272125ca647ff343"
                     ]
                 ]
             }
         ],
         "meta": {
-            "nf-test": "0.8.4",
-            "nextflow": "24.10.3"
+            "nf-test": "0.9.2",
+            "nextflow": "25.04.4"
         },
-        "timestamp": "2025-03-13T11:45:20.221279"
+        "timestamp": "2025-08-06T12:44:33.870514389"
     }
 }

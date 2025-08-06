@@ -14,23 +14,16 @@ nextflow_workflow {
                     id:"test2.9000000",
                     sample_id:"test2",
                     taxid:9000000,
-                    bam_file:"${projectDir}/tests/test_data/test_alignments/test2.9000000.sorted.bam",
-                    ref_files:[
-                        "${projectDir}/tests/test_data/test_references/9000000.fa",
-                        "${projectDir}/tests/test_data/test_references/9000000.fa.amb",
-                        "${projectDir}/tests/test_data/test_references/9000000.fa.ann",
-                        "${projectDir}/tests/test_data/test_references/9000000.fa.bwt",
-                        "${projectDir}/tests/test_data/test_references/9000000.fa.pac",
-                        "${projectDir}/tests/test_data/test_references/9000000.fa.sa"
-                    ],
-                    mpileup_file:"${projectDir}/tests/test_data/test_mpileup_out/test2.9000000.mpileup.out"
                 ]
+                bam_file ="${projectDir}/tests/test_data/test_alignments/test2.9000000.sorted.bam"
+                bai_file ="${projectDir}/tests/test_data/test_alignments/test2.9000000.sorted.bam.bai"
+                ivar_variants_file ="${projectDir}/tests/test_data/test_ivar_variants_out/test2.9000000.variants.tsv"
                 fasta_file ="${projectDir}/tests/test_data/test_consensuses/test2.9000000.consensus.fa"
             }
             workflow {
                 """
                 // define inputs of the workflow here. Example:
-                input[0] = Channel.of(tuple(params.meta, params.fasta_file))
+                input[0] = Channel.of(tuple(params.meta, params.bam_file, params.bai_file, params.fasta_file, params.ivar_variants_file))
                 """
             }
         }
