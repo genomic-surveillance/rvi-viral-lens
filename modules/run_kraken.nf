@@ -45,7 +45,7 @@ process run_kraken {
         val(db_path) // (absolute) path to kraken DB
 
     output:
-        tuple val(meta), path("*.kraken.output"), path("*.class_seqs*"), path("*.unclass_seqs*"), path("*.report.txt")
+        tuple val(meta), path("*.kraken.output"), path("*.class_seqs*"), path("*.unclass_seqs*"), path("*.kraken_report.txt")
 
     script:
         """
@@ -60,7 +60,7 @@ process run_kraken {
         --paired \
         --classified-out ${meta.id}.class_seqs#.fq \
         --unclassified-out ${meta.id}.unclass_seqs#.fq \
-        --report ${meta.id}.report.txt \
+        --report ${meta.id}.kraken_report.txt \
         --threads ${task.cpus} \
         ${fastqs}
         """
