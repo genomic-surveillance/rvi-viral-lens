@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.4.1]
+
+- **[improvement]**: promote kraken report per sample (*.kraken_report.txt) to a primary output
+
 ## [1.4.0]
 
 - **[fix]**: correct ivar_min_quality_threshold to use integer value
