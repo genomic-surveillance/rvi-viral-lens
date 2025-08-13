@@ -5,6 +5,8 @@ All notable changes to this project will be documented in this file.
 ## [1.4.1]
 
 - **[improvement]**: promote kraken report per sample (*.kraken_report.txt) to a primary output
+- **[fix]**: restrict filter non-simple types from QC output (their inclusion in meta resulted in unstable behaviour)
+- **[fix]**: run_pangolin reverted to local executor in sanger_standard profile (due to instability when run under lsf)
 
 ## [1.4.0]
 
