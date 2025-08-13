@@ -137,6 +137,7 @@ nextflow_pipeline {
             assert file("${dir_A}/2697049/${sample_id_A}.2697049.sorted.bam").exists()
             assert file("${dir_A}/2697049/${sample_id_A}.2697049.sorted.bam.bai").exists()
             assert file("${dir_A}/2697049/${sample_id_A}.2697049.properties.json").exists()
+            assert file("${dir_A}/${sample_id_A}.kraken_report.txt").exists()
 
             assert file("${dir_A}/9000016/${sample_id_A}.9000016.consensus.fa").exists()
             assert file("${dir_A}/9000016/${sample_id_A}.9000016.sorted.bam").exists()
@@ -150,48 +151,38 @@ nextflow_pipeline {
             assert file("${dir_B}/9000016/${sample_id_B}.9000016.sorted.bam").exists()
             assert file("${dir_B}/9000016/${sample_id_B}.9000016.sorted.bam.bai").exists()
             assert file("${dir_B}/9000016/${sample_id_B}.9000016.properties.json").exists()
+            assert file("${dir_B}/${sample_id_B}.kraken_report.txt").exists()
 
             // check developer publish outputs
             // expected on the sample_id dir
-            dir_A = "${launchDir}/results/developer_publish/${sample_id_A}/"
-            dir_B = "${launchDir}/results/developer_publish/${sample_id_B}/"
+            def ref_files_dir = "${launchDir}/results/developer_publish/reference_files"
+            def dir_A_dev = "${launchDir}/results/developer_publish/${sample_id_A}/"
+            def dir_B_dev = "${launchDir}/results/developer_publish/${sample_id_B}/"
+
+            // pre_report
+            assert file("${dir_A_dev}/reads_by_taxon/${sample_id_A}_pre_report.tsv").exists()
+            assert file("${dir_B_dev}/reads_by_taxon/${sample_id_B}_pre_report.tsv").exists()
+
 
             // json
-            assert file("${dir_A}/${sample_id_A}_decomposed.json")
-            assert file("${dir_A}/${sample_id_A}_tax_to_reads.json")
+            assert file("${dir_A_dev}/reads_by_taxon/${sample_id_A}_decomposed.json").exists()
+            assert file("${dir_A_dev}/reads_by_taxon/${sample_id_A}_tax_to_reads.json").exists()
 
-            assert file("${dir_B}/${sample_id_B}_decomposed.json")
-            assert file("${dir_B}/${sample_id_B}_tax_to_reads.json")
-
-            // class_seqs.fq
-            assert file("${dir_A}/${sample_id_A}.class_seqs_1.fq")
-            assert file("${dir_A}/${sample_id_A}.class_seqs_2.fq")
-
-            assert file("${dir_B}/${sample_id_B}.class_seqs_1.fq")
-            assert file("${dir_B}/${sample_id_B}.class_seqs_2.fq")
-
-            // kraken output and report
-            assert file("${dir_A}/${sample_id_A}.kraken.output")
-            assert file("${dir_A}/${sample_id_A}.report.txt")
-            
-            assert file("${dir_B}/${sample_id_B}.kraken.output")
-            assert file("${dir_B}/${sample_id_B}.report.txt")
-
-            // unclassified.fq
-            assert file("${dir_A}/${sample_id_A}.unclass_seqs_1.fq")
-            assert file("${dir_A}/${sample_id_A}.unclass_seqs_2.fq")
-
-            assert file("${dir_B}/${sample_id_B}.unclass_seqs_1.fq")
-            assert file("${dir_B}/${sample_id_B}.unclass_seqs_2.fq")
+            assert file("${dir_B_dev}/reads_by_taxon/${sample_id_B}_decomposed.json").exists()
+            assert file("${dir_B_dev}/reads_by_taxon/${sample_id_B}_tax_to_reads.json").exists()
 
             // reads by taxon
-            assert file("${dir_A}/${sample_id_A}_2697049_R1.fq")
-            assert file("${dir_A}/${sample_id_A}_2697049_R2.fq")
-            assert file("${dir_A}/${sample_id_A}_9000016_R1.fq")
-            assert file("${dir_A}/${sample_id_A}_9000016_R2.fq")
+            assert file("${dir_A_dev}/reads_by_taxon/${sample_id_A}_2697049_R1.fq").exists()
+            assert file("${dir_A_dev}/reads_by_taxon/${sample_id_A}_2697049_R2.fq").exists()
+            assert file("${dir_A_dev}/reads_by_taxon/${sample_id_A}_9000016_R1.fq").exists()
+            assert file("${dir_A_dev}/reads_by_taxon/${sample_id_A}_9000016_R2.fq").exists()
 
-            assert file("${dir_B}/${sample_id_B}_9000016_R1.fq")
-            assert file("${dir_B}/${sample_id_B}_9000016_R2.fq")
+            assert file("${dir_B_dev}/reads_by_taxon/${sample_id_B}_9000016_R1.fq").exists()
+            assert file("${dir_B_dev}/reads_by_taxon/${sample_id_B}_9000016_R2.fq").exists()
+
+            // reference files
+            assert file("${ref_files_dir}/2697049.fa").exists()
+            assert file("${ref_files_dir}/9000016.fa").exists()
         }
 
 
