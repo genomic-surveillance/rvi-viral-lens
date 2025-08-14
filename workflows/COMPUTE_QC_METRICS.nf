@@ -33,14 +33,29 @@ workflow COMPUTE_QC_METRICS {
         run_qc_script.out
             | map {meta, bam, bam_idx, consensus, variants, qc_json ->
                 def json_map = new groovy.json.JsonSlurper().parse(new File(qc_json.toString()))
+                def safe_json_map = cleanMap(json_map)
                 // create a new meta with QC metrics
-                def new_meta = meta.plus(json_map)
+                def new_meta = meta.plus(safe_json_map)
                 tuple(new_meta, bam, bam_idx, consensus, variants, qc_json) }
             | set {qc_out_ch}
 
     emit:
         qc_out_ch // (meta, bam, bam_idx, consensus, variants, qc_json)
 }
+
+
+def cleanMap(obj) {
+    if (!(obj instanceof Map)) {
+        throw new IllegalArgumentException("Expected a Map")
+    }
+
+    return obj.findAll { k, v ->
+        v instanceof String || v instanceof Number || v instanceof Boolean || v == null
+    }.collectEntries { k, v ->
+        [(k.toString()): v]
+    }
+}
+
 
 workflow {
     manifest_channel = Channel.fromPath(params.manifest_file)
