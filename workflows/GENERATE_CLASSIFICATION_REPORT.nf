@@ -32,36 +32,12 @@ workflow GENERATE_CLASSIFICATION_REPORT {
         report_in_ch // meta
 
     main:
-    
-        report_in_ch.map{ meta ->
-            //
-            // Clean up the map to restrict it to simple types that can be written into reports; 
-            // This shouldn't be necessary, but since the JSON dumping will fail completely if
-            // if map contains any non-simple types, better to be safe than sorry
-            //
-            def clean 
-            clean = { value ->
-                if (value instanceof Map) {
-                    return value.collectEntries { k, v -> [(k): clean(v)] }.findAll { k, v -> v != null }
-                }
-                if (value instanceof List) {
-                    return value.collect { clean(it) }
-                }
-                if (value instanceof CharSequence || value instanceof Number || value instanceof Boolean) {
-                    return value
-                }
-                return null
-            }
-            def cleaned = clean(meta)
-            return cleaned
-        }.set{ consensus_meta_ch }
-
         // write individual JSONs, and a collated JSON
-        consensus_properties_ch = write_single_properties_json( consensus_meta_ch )
+        consensus_properties_ch = write_single_properties_json( report_in_ch )
  
-        collated_properties_ch = write_collated_properties_json( consensus_meta_ch.collect(), "consensus_sequence_properties" )
+        collated_properties_ch = write_collated_properties_json( report_in_ch.collect(), "consensus_sequence_properties" )
 
-        consensus_meta_ch.map { meta ->
+        report_in_ch.map { meta ->
             // convert any empty or null values to "None"
             def new_meta = meta.collectEntries { key, value ->
                 [(key): (value in [null, ''] ? 'None' : value)]
