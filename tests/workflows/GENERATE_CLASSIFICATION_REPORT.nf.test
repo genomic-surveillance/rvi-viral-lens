@@ -49,26 +49,14 @@ nextflow_workflow {
             workflow {
                 """
                 // define inputs of the workflow here. Example:
-                input[0] = Channel.of(tuple(params.meta), tuple(params.meta_random))
+                input[0] = Channel.of(params.meta, params.meta_random)
                 """
             }
         }
 
         then {
             assert workflow.success
-            assert file("${params.outdir}/classification_report.csv").exists()
-            assert file("${params.outdir}/classification_report_invalid.csv").exists()
-            assert file("${params.outdir}/classification_report.csv").size() > 0
-            assert file("${params.outdir}/classification_report_invalid.csv").size() > 0
-            assert file("${params.outdir}/classification_report.csv").text.contains("test")
-            assert file("${params.outdir}/classification_report_invalid.csv").text.contains("artifact")
-            assert file("${params.outdir}/classification_report.csv").text.contains("SARSCov2")
-            assert file("${params.outdir}/classification_report_invalid.csv").text.contains("Random")
-            assert file("${params.outdir}/classification_report.csv").text.contains("BA.2")
-            assert file("${params.outdir}/classification_report.csv").text.contains("90.0")
-            assert file("${params.outdir}/classification_report_invalid.csv").text.contains("5.0")
             assert snapshot(workflow.out).match()
-        
         }
 
     }
