@@ -10,15 +10,15 @@
                             "sample_id": "test"
                         },
                         "test2_sarscov2.fa:md5,1f41369aa84e4e348f0b5ba6d70a7257",
-                        "EG.5.1.1"
+                        "test.2222222_lineage.csv:md5,abdedf0a186059e9ffa29575cdaf3fe2"
                     ]
                 ]
             }
         ],
         "meta": {
-            "nf-test": "0.8.4",
-            "nextflow": "22.04.5"
+            "nf-test": "0.9.2",
+            "nextflow": "24.10.4"
         },
-        "timestamp": "2024-02-29T12:02:44.185278"
+        "timestamp": "2025-08-21T14:46:29.580392"
     }
 }

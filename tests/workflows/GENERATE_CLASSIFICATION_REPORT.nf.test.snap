@@ -3,14 +3,99 @@
         "content": [
             {
                 "0": [
-                    "classification_report.csv:md5,907b464a7279256aae2767495a2a069a"
+                    [
+                        {
+                            "ref_selected": "Severe acute respiratory syndrome coronavirus 2",
+                            "ti_tv_ratio": "null",
+                            "n_insertions": "0",
+                            "sample_id": "test",
+                            "n_snps": "1",
+                            "percentage_of_N_bases": "0.5",
+                            "longest_no_N_segment": "10",
+                            "total_mapped_reads": "200",
+                            "n_deletions": "0",
+                            "total_mutations": "1",
+                            "percentage_genome_coverage": "90.0",
+                            "taxid": "2222222",
+                            "flu_segment": "",
+                            "virus_name": "SARSCov2",
+                            "id": "test",
+                            "virus_subtype": "BA.2"
+                        },
+                        "test.properties.json:md5,717295a9e9656e49272d24951ceaf2d4"
+                    ],
+                    [
+                        {
+                            "ref_selected": "random virus",
+                            "percentage_genome_coverage": "5.0",
+                            "taxid": "333333",
+                            "flu_segment": "",
+                            "sample_id": "artifact",
+                            "virus_name": "Random",
+                            "percentage_of_N_bases": "0.95",
+                            "virus_subtype": "",
+                            "longest_no_N_segment": "9",
+                            "total_mapped_reads": "5"
+                        },
+                        "null.properties.json:md5,23444d9aae8d1348bc4da1da87d700c9"
+                    ]
+                ],
+                "1": [
+                    "consensus_sequence_properties.json:md5,bcac636cd2ffdf38e9e03df0b48054de"
+                ],
+                "2": [
+                    "classification_report.csv:md5,bb283983cc578ff393df33b8458e44c5"
+                ],
+                "classification_report_ch": [
+                    "classification_report.csv:md5,bb283983cc578ff393df33b8458e44c5"
+                ],
+                "collated_properties_ch": [
+                    "consensus_sequence_properties.json:md5,bcac636cd2ffdf38e9e03df0b48054de"
+                ],
+                "consensus_properties_ch": [
+                    [
+                        {
+                            "ref_selected": "Severe acute respiratory syndrome coronavirus 2",
+                            "ti_tv_ratio": "null",
+                            "n_insertions": "0",
+                            "sample_id": "test",
+                            "n_snps": "1",
+                            "percentage_of_N_bases": "0.5",
+                            "longest_no_N_segment": "10",
+                            "total_mapped_reads": "200",
+                            "n_deletions": "0",
+                            "total_mutations": "1",
+                            "percentage_genome_coverage": "90.0",
+                            "taxid": "2222222",
+                            "flu_segment": "",
+                            "virus_name": "SARSCov2",
+                            "id": "test",
+                            "virus_subtype": "BA.2"
+                        },
+                        "test.properties.json:md5,717295a9e9656e49272d24951ceaf2d4"
+                    ],
+                    [
+                        {
+                            "ref_selected": "random virus",
+                            "percentage_genome_coverage": "5.0",
+                            "taxid": "333333",
+                            "flu_segment": "",
+                            "sample_id": "artifact",
+                            "virus_name": "Random",
+                            "percentage_of_N_bases": "0.95",
+                            "virus_subtype": "",
+                            "longest_no_N_segment": "9",
+                            "total_mapped_reads": "5"
+                        },
+                        "null.properties.json:md5,23444d9aae8d1348bc4da1da87d700c9"
+                    ]
                 ]
             }
         ],
         "meta": {
             "nf-test": "0.9.2",
-            "nextflow": "25.04.2"
+            "nextflow": "25.04.4"
         },
-        "timestamp": "2025-05-21T15:29:11.575504164"
+        "timestamp": "2025-08-29T14:25:02.643946824"
     }
 }

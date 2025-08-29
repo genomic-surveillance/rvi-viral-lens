@@ -30,34 +30,24 @@ process run_pangolin {
     */
     label "pangolin"
     tag "${meta.id}"
-    label "mem_6"
+    label "mem_1"
     label "cpu_1"
 
     input:
         tuple val(meta), path(mapped_fasta)
 
     output:
-        tuple val(meta), path(mapped_fasta), env(lineage)
+        tuple val(meta), path(mapped_fasta), path(lineage_report)
 
-    shell:
+    script:
         lineage_report = "${meta.id}_lineage.csv"
         consensus_fasta = mapped_fasta
-        '''
+        """
+        set -e
+
         # run pangolin
-        pangolin !{consensus_fasta} --outfile !{lineage_report}
-
-        # get sample lineage assignment
-        # stores every value of every column as an env variable
-        # PS: assumes only one row at lineage_report
-        IFS=, read -r taxon lineage conflict ambiguity_score scorpio_call \
-        scorpio_support scorpio_conflict scorpio_notes version \
-        pangolin_version scorpio_version constellation_version \
-        is_designated qc_status qc_notes note < <(tail -n +2 !{lineage_report})
-
-        echo "Taxon: $taxon"
-        echo "Lineage: $lineage"
-        echo "Conflict: $conflict"
-        '''
+        pangolin --tempdir . ${consensus_fasta} --outfile ${lineage_report}
+        """
 /*
 # Script Breakdown
 

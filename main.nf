@@ -24,7 +24,7 @@ workflow {
   * ANSI escape codes to color output messages
   */
   ANSI_GREEN = "\033[1;32m"
-  _ANSI_RED = "\033[1;31m"
+  ANSI_RED = "\033[1;31m"
   ANSI_RESET = "\033[0m"
   _ANSI_BOLD = "\033[1m"
 
@@ -87,7 +87,7 @@ workflow {
     // ==========================
     // === 2 - Map reads to taxid
     SORT_READS_BY_REF(reads_ch)
- 
+
     // === 3 - Generate consensus ==
     GENERATE_CONSENSUS( SORT_READS_BY_REF.out.sample_taxid_ch )
 
@@ -99,30 +99,30 @@ workflow {
         .filter{  it -> (it[0].longest_non_n_subsequence > 0) }
         .set{filtered_consensus_ch}
 
- 
+
     // === 5 - branching output from generate_consensus for viral specific subtyping
 
     SORT_READS_BY_REF.out.sample_pre_report_ch
-        .map{ it -> 
+        .map{ it ->
             def id="${it.sample_id}.${it.selected_taxid}"
             tuple(id, it)
         }
         .set{sample_report_with_join_key_ch}
 
     // 5.1 - add report info to out qc metric chanel and branch for SCOV2 subtyping
-    filtered_consensus_ch 
+    filtered_consensus_ch
         .map { meta, _bam, _bam_idx, consensus, _variants, _qc -> tuple(meta.id, meta, consensus )}
         .join(sample_report_with_join_key_ch)
         .map {_id, meta, fasta, report ->
             def new_meta = meta.plus(report)
-            tuple (new_meta, fasta) 
+            tuple (new_meta, fasta)
         }
         .branch{ it ->
             scv2_subtyping_workflow_in_ch: it[0].ref_selected.contains("${params.scv2_keyword}")
             no_subtyping_ch: true
         }
         .set {filtered_consensus_by_type_ch}
-      
+
     // 5.2 - do SCOV2 subtyping
     if (params.do_scov2_subtyping == true){
         SCOV2_SUBTYPING(filtered_consensus_by_type_ch.scv2_subtyping_workflow_in_ch)
@@ -135,7 +135,7 @@ workflow {
         scov2_subtyped_ch = Channel.empty()
     }
     filtered_consensus_by_type_ch.no_subtyping_ch.concat(scov2_subtyped_ch)
-        .map{ meta, fasta ->  meta } 
+        .map{ meta, _fasta ->  meta }
         .set{report_in_ch}
 
     GENERATE_CLASSIFICATION_REPORT(report_in_ch)
@@ -144,7 +144,7 @@ workflow {
 
     publish_consensus_files (
         // only publish consensus sequence, bams and properties; qc and variants file considered
-        // intermediate outputs 
+        // intermediate outputs
         filtered_consensus_ch
             .map{  meta, bam, bam_idx, fasta, _variants, _qc -> tuple( meta, [bam, bam_idx, fasta] ) }
             .mix( GENERATE_CLASSIFICATION_REPORT.out.consensus_properties_ch )
@@ -159,10 +159,7 @@ workflow {
         /*
         * ANSI escape codes to color output messages
         */
-        def ANSI_GREEN = "\033[1;32m"
-        def ANSI_RED = "\033[1;31m"
-        def ANSI_RESET = "\033[0m"
- 
+
         println """
         Pipeline execution summary
         ---------------------------
@@ -216,7 +213,7 @@ def check_main_params(){
 def parse_mnf(mnf) {
     /*
     -----------------------------------------------------------------
-    Parses the manifest file to create a channel of metadata and 
+    Parses the manifest file to create a channel of metadata and
     FASTQ file pairs.
 
     Also, checks if there are sample_id duplicated and/or containing
@@ -228,7 +225,7 @@ def parse_mnf(mnf) {
     - **Input**:
         mnf (path to the manifest file)
 
-    - **Output**: 
+    - **Output**:
         Channel with tuples of metadata and FASTQ file pairs.
 
     -----------------------------------------------------------------
@@ -239,7 +236,7 @@ def parse_mnf(mnf) {
     // Collect sample IDs and validate
     def sample_ids = []
     def errors = 0
-    
+
     def _errors_ch = mnf_rows.map { row ->
         def sample_id = row.sample_id
 
@@ -255,7 +252,7 @@ def parse_mnf(mnf) {
             } else {
                 sample_ids << sample_id
             }
-        
+
             // Check if sample_id is alphanumeric, allows underscores but not consecutive
             if (!sample_id.matches(/^(?!.*__)[A-Za-z0-9_]+$/)) {
                 log.error("Non alphanumeric sample id ${sample_id} ['_' is permitted]")
@@ -265,7 +262,7 @@ def parse_mnf(mnf) {
         }
         }
         // be sure that the number of errors is evaluated after all rows are processed
-        .collect() 
+        .collect()
         // kill the pipeline if errors are found
         .subscribe{ _v ->
         if (errors > 0) {
@@ -275,13 +272,13 @@ def parse_mnf(mnf) {
     }
 
     // If validation passed, create the channel as before
-    def mnf_ch = mnf_rows.map { row -> 
+    def mnf_ch = mnf_rows.map { row ->
                     // set meta
                     def meta = [
-                      // id is internal to the pipeline and taxid 
+                      // id is internal to the pipeline and taxid
                       // is added to it latter
                       id: row.sample_id,
-                      // sample_id is explictily used on the 
+                      // sample_id is explictily used on the
                       // publishing of files paths
                       sample_id: row.sample_id
                     ]

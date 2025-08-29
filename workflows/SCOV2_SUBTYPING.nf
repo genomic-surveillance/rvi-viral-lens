@@ -59,13 +59,13 @@ workflow SCOV2_SUBTYPING {
         consensus_seq_ch // tuple (meta, consensus_seq)
 
     main:
-
         // get SCOV2 lineage classification
         run_pangolin(consensus_seq_ch)
         run_pangolin.out
-            .map { meta, consensus_seq, lineage -> 
-                // create a new meta with lineage information
-                def new_meta = meta.plus(virus_subtype: lineage)
+            .map { meta, consensus_seq, pangolin_csv -> 
+                // Pangolin CSV file will contain one row (single sample), in addition to header
+                def rows = pangolin_csv.splitCsv(header:true)
+                def new_meta = meta.plus(virus_subtype: rows[0].lineage)
                 tuple(new_meta, consensus_seq)
             }
             .set {scov2_subtype_out_ch}
